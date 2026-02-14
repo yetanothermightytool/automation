@@ -47,12 +47,12 @@ Restart n8n to load the custom node.
 ## Usage
 1. In n8n, create a new credential of type “Veeam Backup & Replication REST API”
 2. Configure the following fields:
+   - Give the credential a name that refers to your endpoint (top left corner) 
    - URL: Your Veeam B&R server endpoint (e.g., https://vbr-server:9419)
    - API Version: API version (e.g., 1.3-rev1)
    - Username: Your username
    - Password: Your password
    - Ignore SSL Errors: Enable for self-signed certificates
-   - Give the credential a name that refers to your endpoint (top left corner) 
 4. Add the "Veeam Get Access Token" node to your workflow
 5. Select your configured credential
 6. The node will output the access token, URL, and API version for use in the follwing nodes.
