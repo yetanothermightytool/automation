@@ -66,6 +66,10 @@ Access the generated values in HTTP Request nodes using:
 
 ## Sample Workflows
 Coming soon
+
+## Notes
+Tested with n8n version 2.7.5
+
 ## Disclaimer
 **This integration and workflows are not officially supported by Veeam Software. Use it at your own risk.**
 
