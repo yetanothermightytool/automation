@@ -1,0 +1,157 @@
+{
+  "name": "Get Restore Points",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "da1aece8-cc84-4efe-8fb1-9ab191a2e86c",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}/api/v1/restorePoints",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "100"
+            },
+            {
+              "name": "nameFilter"
+            },
+            {
+              "name": "malwareStatusFilter"
+            },
+            {
+              "name": "createdAfterFilter"
+            },
+            {
+              "name": "createdBeforeFilter"
+            },
+            {
+              "name": "orderColumn",
+              "value": "name"
+            },
+            {
+              "name": "orderAsc",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        0
+      ],
+      "id": "05a45f09-b1f4-4066-a540-902a6d117239",
+      "name": "Get Restore Points"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4ff38da5-5153-4bcf-a7c3-edcf9e0468c5",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "apiUser": {
+          "id": "Ro1hZetv1ePo8mNB",
+          "name": "Veeam Backup & Replication REST account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "057ee4a6-74fc-4bac-aaf3-cbdde8952539",
+      "name": "Manual Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Restore Points": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get Restore Points",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "de5900c4-d4a9-48ea-b51a-4c0ce279f599",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "dNN5MmGNTvBFHg22",
+  "tags": []
+}
