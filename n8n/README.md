@@ -1,6 +1,6 @@
-# n8n Custom Integration for Veeam Backup & Replication
+# n8n Custom Integration for the Veeam Data Platform
 
-This custom n8n integration provides OAuth Password Grant authentication for the Veeam Backup & Replication REST API. It consists of a custom credential type and an authentication node that generates Bearer tokens for subsequent API calls.
+This custom n8n integration provides OAuth Password Grant authentication for the Veeam Backup & Replication and Veeam ONE REST API. It consists of a custom credential type and an authentication node that generates Bearer tokens for subsequent API calls.
 
 ## Version Information
 ~~~~
@@ -10,8 +10,8 @@ Author: Stephan "Steve" Herzig
 ~~~~
 
 ## Features
-- **Custom Credential Type** Stores Veeam Backup & Replication REST API endpoint, API Revision level, authentication details, and SSL validation options
-- **OAuth Token Node** Handles the Bearer token creation and passes the token and other details for further usage.
+- **Custom Credential Type** Stores Veeam Backup & Replication or the Veeam ONE REST API endpoint, API Revision level, authentication details, and SSL validation options
+- **OAuth Token Node** Handles the Bearer token creation and passes the token and other details for further usage
 - **Seamless Integration** Generated Bearer token and API details are accessible in HTTP Request nodes
 
 ## Docker Setup
@@ -45,21 +45,21 @@ export N8N_CUSTOM_EXTENSIONS=~/.n8n/custom
 Restart n8n to load the custom node.
 
 ## Usage
-1. In n8n, create a new credential of type “Veeam Backup & Replication REST API”
+1. In n8n, create a new credential of type “Veeam Data Platofrm”
    ![alt text](https://github.com/yetanothermightytool/automation/blob/main/n8n/images/Add_Credentials.png)
 
 2. Configure the following fields:
    ![alt text](https://github.com/yetanothermightytool/automation/blob/main/n8n/images/Configure_Credentials.png)
 
    - Give the credential a name that refers to your endpoint (top left corner) 
-   - URL: Your Veeam B&R server endpoint (e.g., https://vbr-server:9419)
-   - API Version: API version (e.g., 1.3-rev1)
+   - URL: Your Veeam B&R server endpoint (e.g., https://vbr-server:9419 - Veeam ONE https://vone-server:1239)
+   - API Version: API version (e.g., 1.3-rev1 for Veeam Backup & Replication or v2.3 for Veeeam ONE)
    - Username: Your username
    - Password: Your password
    - Ignore SSL Errors: Enable for self-signed certificates
 
 3. Create a new workflow
-4. Add the "Veeam Get Access Token" node to your workflow
+4. Add the "Veeam Get Access Token" or "Veeam ONE get Access Token" node to your workflow
    ![alt text](https://github.com/yetanothermightytool/automation/blob/main/n8n/images/Add_Node.png)
 
 5. Select your configured credential and click 'Execute step' to check if a Bearer token can be retrieved
