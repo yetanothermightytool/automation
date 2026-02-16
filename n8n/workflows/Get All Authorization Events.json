@@ -1,5 +1,5 @@
 {
-  "name": "Get Restore Points",
+  "name": "Get All Authorization Events",
   "nodes": [
     {
       "parameters": {
@@ -12,30 +12,29 @@
         672,
         0
       ],
-      "id": "da1aece8-cc84-4efe-8fb1-9ab191a2e86c",
+      "id": "8541dcc2-d35e-43ed-9fbf-3707849df14e",
       "name": "Split Out"
     },
     {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cdb89913-1341-4b62-a816-6b6e23480c13",
+      "name": "Manual Trigger"
+    },
+    {
       "parameters": {
-        "url": "={{ $json.url }}/api/v1/restorePoints",
+        "url": "={{ $json.url }}\n/api/v1/authorization/events",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
             {
               "name": "limit",
-              "value": "100"
-            },
-            {
-              "name": "nameFilter"
-            },
-            {
-              "name": "malwareStatusFilter"
-            },
-            {
-              "name": "createdAfterFilter"
-            },
-            {
-              "name": "createdBeforeFilter"
+              "value": "10"
             },
             {
               "name": "orderColumn",
@@ -70,19 +69,8 @@
         448,
         0
       ],
-      "id": "05a45f09-b1f4-4066-a540-902a6d117239",
-      "name": "Get Restore Points"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        0,
-        0
-      ],
-      "id": "057ee4a6-74fc-4bac-aaf3-cbdde8952539",
-      "name": "Manual Trigger"
+      "id": "da058e8e-03d7-4284-8996-a89d1bc6f597",
+      "name": "Get All Authorization Events"
     },
     {
       "parameters": {},
@@ -92,7 +80,7 @@
         224,
         0
       ],
-      "id": "14edeb7f-fc98-4b33-ac45-b9efb10b04c6",
+      "id": "d8a0bdea-6d7a-40ac-a0be-f3556ec55f3e",
       "name": "Get Bearer Token",
       "credentials": {
         "VeeamDataPlatform": {
@@ -104,17 +92,6 @@
   ],
   "pinData": {},
   "connections": {
-    "Get Restore Points": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Manual Trigger": {
       "main": [
         [
@@ -126,11 +103,22 @@
         ]
       ]
     },
+    "Get All Authorization Events": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Get Bearer Token": {
       "main": [
         [
           {
-            "node": "Get Restore Points",
+            "node": "Get All Authorization Events",
             "type": "main",
             "index": 0
           }
@@ -146,11 +134,11 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "28781e79-0bd2-438e-8a55-d792d4ae496a",
+  "versionId": "6d1fb95f-095a-4fab-949a-cf3ca6c82fca",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
   },
-  "id": "dNN5MmGNTvBFHg22",
+  "id": "5vIFzeBBE7ZlD9ZS",
   "tags": []
 }

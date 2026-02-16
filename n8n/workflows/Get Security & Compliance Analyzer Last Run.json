@@ -1,52 +1,20 @@
 {
-  "name": "Get Restore Points",
+  "name": "Get Security & Compliance Analyzer Last Run",
   "nodes": [
     {
-      "parameters": {
-        "fieldToSplitOut": "data",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        672,
+        0,
         0
       ],
-      "id": "da1aece8-cc84-4efe-8fb1-9ab191a2e86c",
-      "name": "Split Out"
+      "id": "3f7808f1-0a4b-4888-b8ca-f3f7c716505c",
+      "name": "Manual Trigger"
     },
     {
       "parameters": {
-        "url": "={{ $json.url }}/api/v1/restorePoints",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "limit",
-              "value": "100"
-            },
-            {
-              "name": "nameFilter"
-            },
-            {
-              "name": "malwareStatusFilter"
-            },
-            {
-              "name": "createdAfterFilter"
-            },
-            {
-              "name": "createdBeforeFilter"
-            },
-            {
-              "name": "orderColumn",
-              "value": "CreationTime"
-            },
-            {
-              "name": "orderAsc",
-              "value": "false"
-            }
-          ]
-        },
+        "url": "={{ $json.url }}/api/v1/securityAnalyzer/lastRun ",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -70,19 +38,8 @@
         448,
         0
       ],
-      "id": "05a45f09-b1f4-4066-a540-902a6d117239",
-      "name": "Get Restore Points"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        0,
-        0
-      ],
-      "id": "057ee4a6-74fc-4bac-aaf3-cbdde8952539",
-      "name": "Manual Trigger"
+      "id": "32a92f8a-fb25-4c60-b5bf-a092d4f18c9e",
+      "name": "Get Security & Compliance Analyzer Last Run"
     },
     {
       "parameters": {},
@@ -92,7 +49,7 @@
         224,
         0
       ],
-      "id": "14edeb7f-fc98-4b33-ac45-b9efb10b04c6",
+      "id": "107e50aa-8bf6-46ce-a4e8-f40202d72e6b",
       "name": "Get Bearer Token",
       "credentials": {
         "VeeamDataPlatform": {
@@ -104,17 +61,6 @@
   ],
   "pinData": {},
   "connections": {
-    "Get Restore Points": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Manual Trigger": {
       "main": [
         [
@@ -126,11 +72,16 @@
         ]
       ]
     },
+    "Get Security & Compliance Analyzer Last Run": {
+      "main": [
+        []
+      ]
+    },
     "Get Bearer Token": {
       "main": [
         [
           {
-            "node": "Get Restore Points",
+            "node": "Get Security & Compliance Analyzer Last Run",
             "type": "main",
             "index": 0
           }
@@ -146,11 +97,11 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "28781e79-0bd2-438e-8a55-d792d4ae496a",
+  "versionId": "1dec8c69-9a36-4848-9540-ad8fa00d995f",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
   },
-  "id": "dNN5MmGNTvBFHg22",
+  "id": "qHS5i9EUt8XgAB2c",
   "tags": []
 }

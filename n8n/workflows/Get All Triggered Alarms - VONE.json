@@ -1,0 +1,137 @@
+{
+  "name": "Get All Triggered Alarms - VONE",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4b018300-0b2a-4ddf-a2c9-62dac965f15d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.VeeamONEToken",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7729333b-5902-4b43-8e61-092cff7834b1",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "ETNBkLgRpSCyCxrV",
+          "name": "Veeam ONE Server"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "e783c2ae-c9fc-442d-96e9-1a7e2b41431f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}\n/api/{{ $json.apiVersion }}/alarms/triggeredAlarms?filter={\"operation\":\"and\",\"items\":[{\"operation\":\"or\",\"items\":[{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"395\"},{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"364\"},{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"376\"},{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"377\"},{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"403\"},{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"316\"},{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"342\"},{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"381\"},{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"369\"},{\"property\":\"predefinedAlarmId\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"419\"}]},{\"operation\":\"or\",\"items\":[{\"property\":\"status\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"Warning\"},{\"property\":\"status\",\"operation\":\"equals\",\"collation\":\"ignorecase\",\"value\":\"Error\"}]}]}&offset=0&limit=100",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "15318adc-10f4-41c2-958f-0c4c54879e01",
+      "name": "Get All Triggered Alarms"
+    },
+    {
+      "parameters": {
+        "content": "## **Get All Triggered Alarms**\n\nThis workflow shows all security-related alarms in Veeam ONE with Warning or Error status.",
+        "width": 416,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "4ebe36b0-89e9-4542-8738-a9553795df47",
+      "name": "Sticky Note",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get All Triggered Alarms",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Triggered Alarms": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "aa102a7f-860c-41ed-94a4-0b26f7ac90cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "QTUetAelUL7d9zKP",
+  "tags": []
+}

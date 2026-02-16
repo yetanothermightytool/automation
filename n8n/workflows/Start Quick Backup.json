@@ -1,0 +1,177 @@
+{
+  "name": "Start Quick Backup",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -112
+      ],
+      "id": "b5bfaea5-21aa-4ed1-89ba-c628f29ef98e",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}/api/v1/jobs/quickBackup/vSphere",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"platform\": \"VSphere\",  \n  \"name\": \"{{ $('Input Fields').item.json['VM Name'] }}\",\n  \"type\": \"VirtualMachine\",\n  \"hostName\": \"{{ $('Input Fields').item.json['vCenter FQDN'] }}\",\n  \"objectId\": \"{{ $('Input Fields').item.json['Object ID'] }}\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        -112
+      ],
+      "id": "11c22270-43a6-40d5-ae08-a467fb896a81",
+      "name": "Start Quick Backup"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c92e26d8-d013-4223-b872-80e2a9f5df5d",
+              "name": "VM Name",
+              "value": "Name of the virtual machine",
+              "type": "string"
+            },
+            {
+              "id": "f9470220-2536-4853-8ce4-7fdbc66d3923",
+              "name": "vCenter FQDN",
+              "value": "FQDN of the vCenter server",
+              "type": "string"
+            },
+            {
+              "id": "616c2f12-4683-43e4-8e2e-eddd799608d9",
+              "name": "Object ID",
+              "value": "Object ID of the VM",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        -112
+      ],
+      "id": "ccb6dc49-43a2-417d-b9b8-261ebecab9ed",
+      "name": "Input Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -112
+      ],
+      "id": "e1723e50-0f89-435b-b945-c3722ed9db66",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -112
+      ],
+      "id": "f381e711-8b21-4965-97ae-39f2d4fd62f0",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start Quick Backup": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Fields": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Input Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Start Quick Backup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "61fb5f95-bccf-401b-b28f-6dd9dd6b4601",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "IC2G6BLDbZwTAocd",
+  "tags": []
+}
