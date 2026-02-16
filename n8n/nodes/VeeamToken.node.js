@@ -1,18 +1,19 @@
 const qs = require('querystring');
 
-class OAuthToken {
+class VeeamToken {
  description = {
    displayName: 'Veeam Get Access Token',
    name: 'oauthToken',
+   icon: 'file:bearer.png',
    group: ['transform'],
    version: 1,
-   description: 'OAuth Token Request (Password Grant)',
+   description: 'Bearer Token Request',
    defaults: { name: 'Get Bearer Token' },
    inputs: ['main'],
    outputs: ['main'],
    credentials: [
      {
-       name: 'apiUser',
+       name: 'VeeamDataPlatform',
        required: true,
      },
    ],
@@ -20,7 +21,7 @@ class OAuthToken {
  };
 
  async execute() {
-   const creds = await this.getCredentials('apiUser');
+   const creds = await this.getCredentials('VeeamDataPlatform');
 
    const body = qs.stringify({
      grant_type: 'Password',
@@ -50,4 +51,4 @@ class OAuthToken {
  }
 }
 
-module.exports = { OAuthToken };
+module.exports = { VeeamToken };
