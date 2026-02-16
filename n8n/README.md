@@ -10,9 +10,12 @@ Author: Stephan "Steve" Herzig
 ~~~~
 
 ## Features
-- **Custom Credential Type** Stores Veeam Backup & Replication or the Veeam ONE REST API endpoint, API Revision level, authentication details, and SSL validation options
-- **OAuth Token Node** Handles the Bearer token creation and passes the token and other details for further usage
-- **Seamless Integration** Generated Bearer token and API details are accessible in HTTP Request nodes
+- **Custom Credential Type**
+     - Stores the Veeam Backup & Replication or the Veeam ONE REST API endpoint, API Revision level, authentication details, and SSL validation options
+- **OAuth Token Node**
+    - Handles the Bearer token creation and passes the token and other details for further usage
+- **Seamless Integration**
+    -  Generated Bearer token and API details are accessible in HTTP Request nodes
 
 ## Docker Setup
 1. Add the custom extensions path to your `docker-compose.yml`:
@@ -31,15 +34,19 @@ environment:
 ```
 ~/.n8n/custom/
 ├── credentials/
-│   ├── ApiUser.credentials.js
-│   └── ApiUser.credentials.png
+│   ├── VeeamDataPlatform.credentials.js
+│   └── VeeamDataPlatform.credentials.png
 └── nodes/
-   └── OAuthToken.node.js
+   └── VeeamToken.node.js
+   └── VeeamONEToken.node.js
+   └── bearer.png
+
 ```
 4. Set the custom extensions environment variable in the docker-compose.yml file
 
 ```yaml
-export N8N_CUSTOM_EXTENSIONS=~/.n8n/custom
+environment:
+   - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
 ```
 5. Restart
 Restart n8n to load the custom node.
@@ -75,14 +82,15 @@ Access the generated values in HTTP Request nodes using:
 - {{$json.apiVersion}}    // API version
 
 ## Sample Workflows
-Coming soon
+[See here](https://github.com/yetanothermightytool/automation/blob/main/n8n/workflows/README.md)
 
 ## Notes
+n8h self-hosting setup only
 Tested with n8n version 2.7.5
 
 ## Disclaimer
 **This integration and workflows are not officially supported by Veeam Software. Use it at your own risk.**
 
 ## Version History
-- 1.0 (February 2026 - Project start was in July 2025)
+- 1.0 (February 16th 2026)
    - Initial version
