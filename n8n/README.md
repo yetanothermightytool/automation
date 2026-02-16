@@ -1,6 +1,6 @@
 # n8n Custom Integration for the Veeam Data Platform
 
-This custom n8n integration provides OAuth Password Grant authentication for the Veeam Backup & Replication and Veeam ONE REST API. It consists of a custom credential type and an authentication node that generates Bearer tokens for subsequent API calls.
+This custom n8n integration provides n8n nodes that use a custom credential configuration to generate Bearer tokens via the Password Grant method for Veeam Backup & Replication and Veeam ONE REST APIs.
 
 ## Version Information
 ~~~~
