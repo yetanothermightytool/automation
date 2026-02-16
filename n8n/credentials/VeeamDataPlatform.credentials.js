@@ -1,18 +1,18 @@
-class ApiUser {
+class VeeamDataPlatform {
  constructor() {
-   this.name = 'apiUser';
-   this.displayName = 'Veeam Backup & Replication REST API';
-   this.icon = 'file:ApiUser.credentials.png';
+   this.name = 'VeeamDataPlatform';
+   this.displayName = 'Veeam Data Platform REST API';
+   this.icon = 'file:VeeamDataPlatform.credentials.png';
    this.documentationUrl = 'https://github.com/yetanothermightytool/automation/blob/main/n8n/README.md';
    this.properties = [
      {
-       displayName: 'URL',
+       displayName: 'URL of your Veeam Backup & Replication or Veeam ONE Server. Use port 1239 for Veeam ONE',
        name: 'url',
        type: 'string',
-       default: 'https://vbr-server:9419',
+       default: 'https://veeam-server:9419',
      },
      {
-       displayName: 'API-Version',
+       displayName: 'API Version - Use v2.3 for Veeam ONE',
        name: 'apiVersion',
        type: 'string',
        default: '1.3-rev1',
@@ -40,4 +40,4 @@ class ApiUser {
  }
 }
 
-module.exports = { ApiUser };
+module.exports = { VeeamDataPlatform };
