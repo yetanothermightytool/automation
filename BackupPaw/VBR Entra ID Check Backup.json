@@ -1,0 +1,312 @@
+{
+  "name": "VBR Entra ID Check Backup",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "displayName"
+            },
+            {
+              "name": "searchType"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1680,
+        128
+      ],
+      "id": "44c88545-dd6b-4179-addb-3bcd00f7ae45",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}/api/v1/restorePoints",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "platformNameFilter",
+              "value": "EntraID"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "orderColumn",
+              "value": "CreationTime"
+            },
+            {
+              "name": "orderAsc",
+              "value": "false"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1200,
+        128
+      ],
+      "id": "16b879a6-d6ef-4c15-b295-fcabc1a7610e",
+      "name": "Get Entra ID Restore Points"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/restore/entraId/tenant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ backupId: $('Get Entra ID Restore Points').item.json.data[0].backupId }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        128
+      ],
+      "id": "5bf58f7a-7c9a-40c4-a19d-1c1579b50b8b",
+      "name": "Start Restore Session"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        128
+      ],
+      "id": "8a0c8bcc-085b-4b46-a506-2103fbb791cf",
+      "name": "Wait 15s",
+      "webhookId": "d8fca70e-8246-43c7-9c59-648c6cce3b6e"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/backupBrowser/entraIdTenant/{{ $('Get Entra ID Restore Points').item.json.data[0].backupId }}/browse",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ type: $('Execute Workflow Trigger').item.json.searchType, filter: { displayName: $('Execute Workflow Trigger').item.json.displayName } }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        128
+      ],
+      "id": "07370a18-f4dc-47ad-a102-12d68b925e23",
+      "name": "Search Item"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        128
+      ],
+      "id": "6ea78117-594a-4763-bb2f-3a126513c383",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/restore/entraId/tenant/{{ $('Start Restore Session').item.json.sessionId }}/stop",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ backupId: $('Get Entra ID Restore Points').item.json.data[0].backupId }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -256,
+        128
+      ],
+      "id": "df1fe965-23ff-41c9-97a6-22ac16b37df1",
+      "name": "Stop Session"
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger   = $('Execute Workflow Trigger').item.json;\nconst rp        = $('Get Entra ID Restore Points').item.json;\nconst searchRes = $('Search Item').item.json;\n\nconst result = {\n  searchType:          trigger.searchType,\n  displayName:         trigger.displayName,\n  foundInBackup:       true,\n  latestRestorePoint:  rp.data[0]?.creationTime ?? null\n};\n\nif (trigger.checkProd === 'true' || trigger.checkProd === true) {\n  result.existsInProduction = (checkProd.items?.length ?? 0) > 0;\n}\n\nif (trigger.compareProd === 'true' || trigger.compareProd === true) {\n  try {\n    const compareRes = $('Compare with Production').item.json;\n    result.differences = compareRes.properties ?? [];\n  } catch (e) {\n    result.differences = [];\n  }\n}\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        128
+      ],
+      "id": "ed86e5c1-da37-44cc-bb80-a5cc0d74079e",
+      "name": "Format Found Output"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Entra ID Restore Points": {
+      "main": [
+        [
+          {
+            "node": "Start Restore Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Restore Session": {
+      "main": [
+        [
+          {
+            "node": "Wait 15s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15s": {
+      "main": [
+        [
+          {
+            "node": "Search Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Item": {
+      "main": [
+        [
+          {
+            "node": "Stop Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get Entra ID Restore Points",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Session": {
+      "main": [
+        [
+          {
+            "node": "Format Found Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c37f55a5-8f2d-4e96-a286-13c4f5c20f1f",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "KvaRhD6SbMuD33FV",
+  "tags": []
+}
