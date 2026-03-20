@@ -12,7 +12,7 @@
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [-1680, 128],
+      "position": [-1920, 128],
       "id": "eicp-0001-0000-0000-000000000001",
       "name": "Execute Workflow Trigger"
     },
@@ -20,7 +20,7 @@
       "parameters": {},
       "type": "CUSTOM.oauthToken",
       "typeVersion": 1,
-      "position": [-1440, 128],
+      "position": [-1680, 128],
       "id": "eicp-0001-0000-0000-000000000002",
       "name": "Get Bearer Token",
       "credentials": {
@@ -53,9 +53,31 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-1200, 128],
+      "position": [-1440, 128],
       "id": "eicp-0001-0000-0000-000000000003",
       "name": "Get Entra ID Restore Points"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/backupBrowser/entraIdTenant/{{ $('Get Entra ID Restore Points').item.json.data[0].backupId }}/restorePoints",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}" },
+            { "name": "x-api-version", "value": "={{ $('Get Bearer Token').item.json.apiVersion }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"limit\": 10, \"sorting\": {\"property\": \"creationTime\", \"direction\": \"descending\"}}",
+        "options": { "allowUnauthorizedCerts": true }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1200, 128],
+      "id": "eicp-0001-0000-0000-000000000014",
+      "name": "Get Backup Browser Restore Points"
     },
     {
       "parameters": {
@@ -146,7 +168,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ items: [{ itemId: $('Search Item').item.json.data[0].id, restorePointId: $('Get Entra ID Restore Points').item.json.data[0].id }] }) }}",
+        "jsonBody": "={{ JSON.stringify({ items: [{ itemId: $('Search Item').item.json.data[0].id, restorePointId: $('Get Backup Browser Restore Points').item.json.data[0].id }] }) }}",
         "options": { "allowUnauthorizedCerts": true }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -168,7 +190,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ itemId: $('Search Item').item.json.data[0].id, itemType: $('Execute Workflow Trigger').item.json.searchType, oldRestorePointId: $('Get Entra ID Restore Points').item.json.data[0].id, showUnchangedAttributes: false, reloadCache: true }) }}",
+        "jsonBody": "={{ JSON.stringify({ itemId: $('Search Item').item.json.data[0].id, itemType: $('Execute Workflow Trigger').item.json.searchType, oldRestorePointId: $('Get Backup Browser Restore Points').item.json.data[0].id, showUnchangedAttributes: false, reloadCache: true }) }}",
         "options": { "allowUnauthorizedCerts": true }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -254,7 +276,8 @@
   "connections": {
     "Execute Workflow Trigger": { "main": [[{ "node": "Get Bearer Token", "type": "main", "index": 0 }]] },
     "Get Bearer Token": { "main": [[{ "node": "Get Entra ID Restore Points", "type": "main", "index": 0 }]] },
-    "Get Entra ID Restore Points": { "main": [[{ "node": "Start Restore Session", "type": "main", "index": 0 }]] },
+    "Get Entra ID Restore Points": { "main": [[{ "node": "Get Backup Browser Restore Points", "type": "main", "index": 0 }]] },
+    "Get Backup Browser Restore Points": { "main": [[{ "node": "Start Restore Session", "type": "main", "index": 0 }]] },
     "Start Restore Session": { "main": [[{ "node": "Wait 15s", "type": "main", "index": 0 }]] },
     "Wait 15s": { "main": [[{ "node": "Search Item", "type": "main", "index": 0 }]] },
     "Search Item": { "main": [[{ "node": "IF: Item Found?", "type": "main", "index": 0 }]] },
