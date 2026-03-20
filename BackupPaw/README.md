@@ -37,7 +37,7 @@ Chat Input
             ├── Simple Memory (Buffer Window)
             ├── Think (internal reasoning)
             ├── [Tools - see below]
-            └── Split Out 
+            └── Split Out
 ```
 
 ### Tools
@@ -57,6 +57,8 @@ Chat Input
 | VBR Get All Tasks | Currently running background tasks |
 | VBR Get All Malware Events | Malware detection events |
 | VBR Get All Authorization Events | Security and permission-related audit events |
+| BackupPaw Research Agent | Sub-agent for CVE lookups and Veeam release checks |
+| Entra ID Agent | Sub-agent for Entra ID backup queries and comparisons |
 
 Each tool is implemented as a separate sub-workflow called via `toolWorkflow` node.
 
@@ -64,9 +66,35 @@ Each tool is implemented as a separate sub-workflow called via `toolWorkflow` no
 
 ## Sub-Workflow Setup
 
-Import all sub-workflow JSON files into n8n, then replace the placeholder in the `BackupPaw 🐾`  workflow with the actual workflow IDs assigned after import:
+Import all sub-workflow JSON files into n8n, then replace the placeholders in the `BackupPaw 🐾` workflow with the actual workflow IDs assigned after import.
 
-Assign the **Veeam Data Platform REST API** credential to the `Get Bearer Token` node in each sub-workflow.
+Assign the **Veeam Data Platform REST API** credential to the `Get Bearer Token` node in each VBR sub-workflow.
+
+---
+
+## Research Agent
+
+The **BackupPaw Research Agent** is a separate sub-agent using Claude Haiku to minimize token costs. It has two tools:
+
+| Sub-Workflow | Description |
+|---|---|
+| NVD CVE Lookup | Searches the NIST NVD for CVEs by keyword and date range |
+| Veeam Release Check | Fetches latest VBR release versions from Veeam KB2680 |
+
+**NVD API Key (optional):** Without a key, requests are rate-limited to 5 per 30 seconds. To add one, create a **Generic Credential Type → Header Auth** credential with header name `apiKey` and assign it to the `NVD CVE Search` node in the `NVD CVE Lookup` sub-workflow.
+
+---
+
+## Entra ID Agent
+
+The **Entra ID Agent** is a separate sub-agent using Claude Haiku to query Entra ID backup data via the VBR REST API. It has two tools:
+
+| Sub-Workflow | Description |
+|---|---|
+| Entra ID Check Backup | Checks if a User, Group, or Application exists in the backup and in production |
+| Entra ID Compare Production | Checks backup existence and compares item properties with current production state |
+
+The agent determines which tool to use based on the query — simple existence checks use `Entra ID Check Backup`, while change detection uses `Entra ID Compare Production`.
 
 ---
 
@@ -77,6 +105,10 @@ Assign the **Veeam Data Platform REST API** credential to the `Get Bearer Token`
 - `Are there any malware events in the last 24 hours?`
 - `How much free space is left on the backup repositories?`
 - `Start a quick backup for vm-app-03.` *(requires confirmation)*
+- `Are there any critical CVEs for Veeam in the last 7 days?`
+- `What is the latest VBR release?`
+- `Is user john.doe@contoso.com backed up in Entra ID?`
+- `What changed for group 'IT-Admins' compared to the backup?`
 
 ---
 
@@ -88,7 +120,7 @@ Assign the **Veeam Data Platform REST API** credential to the `Get Bearer Token`
 ## Version History
 - 0.1 (February 2026)
    - Initial version
-     
+
 ---
 
 ## Agent Behavior
@@ -97,3 +129,4 @@ Assign the **Veeam Data Platform REST API** credential to the `Get Bearer Token`
 - **Actions** (start job, quick backup) require explicit user confirmation before execution
 - **Default timeframe** is the last 24 hours when none is specified
 - **Last backup queries** use `VBR Get Restore Points` after VM lookup
+- **Research and Entra ID queries** are delegated to dedicated sub-agents running Claude Haiku
