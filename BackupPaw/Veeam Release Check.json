@@ -1,0 +1,61 @@
+{
+  "name": "Veeam Release Check",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Setup\nReplace **YOUR-VEEAM-RELEASE-URL** in the HTTP Request node with the URL you use to check for the latest Veeam Backup & Replication release.\n\nSuggested source: Veeam Help Center release notes or your internal patch management system.",
+        "height": 160,
+        "width": 440,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-480, -220],
+      "id": "vrc00001-0000-0000-0000-000000000000",
+      "name": "Setup Note"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-480, 0],
+      "id": "vrc00001-0000-0000-0000-000000000001",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://YOUR-VEEAM-RELEASE-URL",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-240, 0],
+      "id": "vrc00001-0000-0000-0000-000000000002",
+      "name": "Veeam Release Check"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Veeam Release Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "id": "VEEAM_RELEASE_WORKFLOW_PLACEHOLDER",
+  "tags": []
+}

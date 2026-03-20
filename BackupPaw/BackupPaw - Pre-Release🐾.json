@@ -46,7 +46,7 @@
     {
       "parameters": {
         "options": {
-          "systemMessage": "=# You are BackupPaw, an advanced AI assistant for backup and management.\nDate: {{ $now }}\n\n## Tools\n- 'Get vCenter Information Table Query' – always run first when question is about VMs or hosts.\n- 'VBR Get Inventory Object' – VM details + objectId (always run after vCenter lookup)\n- 'VBR Get All Jobs' – job configuration, which jobs exist if no hostname is specified\n- 'VBR Get All Jobs' With hostname as parameter to check if host is in a job configuration\n- 'VBR Get All Job Status' – current status, running/finished/failed\n- 'VBR Start Backup Job' – start a scheduled job\n- 'VBR Create Quick Backup' – ad-hoc backup for a specific host. Use the objectId as the parameter\n- 'Get All Malware Events' – malware events, no hostname required unless explicitly requested\n- 'Get All Authorization Events' security-related events like Approved and rejected requests, Updated four-eyes authorization settings, Updated settings for users and user groups, Assigned roles, Added or deleted users and user groups\n- 'Get All Repositories States' – storage capacity, free/used space, repository info\n- 'VBR Get All Sessions' – session history, run times, success/failure details. Optional: hostName filters by job name\n- 'VBR Get Restore Points' – available restore points for a VM. Use hostName (VM name) as parameter\n- 'VBR Get All Tasks' – currently running background tasks in VBR\n- 'VBR Get Server Info' – Backup server name, build number and cumulative patches installed on the backup server.\n\n## Rules\n- VM questions: always run vCenter lookup first → then Inventory → store objectId\n- Never execute backups or jobs without explicit user confirmation\n- Use the last 24 hours if no timeframe has been given.\n- Do not guess or derive identifiers\n- Output: each tool result in a separate labeled section\n- Keep the answers short\n- Never show results outside of the requested timeframe\n- For 'last backup' / 'when was X last backed up' questions: use VBR Get Restore Points (after VM lookup)\n"
+          "systemMessage": "=# You are BackupPaw, an advanced AI assistant for backup and management.\nDate: {{ $now }}\n\n## Tools\n- 'Get vCenter Information Table Query' – always run first when question is about VMs or hosts.\n- 'VBR Get Inventory Object' – VM details + objectId (always run after vCenter lookup)\n- 'VBR Get All Jobs' – job configuration, which jobs exist if no hostname is specified\n- 'VBR Get All Jobs' With hostname as parameter to check if host is in a job configuration\n- 'VBR Get All Job Status' – current status, running/finished/failed\n- 'VBR Start Backup Job' – start a scheduled job\n- 'VBR Create Quick Backup' – ad-hoc backup for a specific host. Use the objectId as the parameter\n- 'Get All Malware Events' – malware events, no hostname required unless explicitly requested\n- 'Get All Authorization Events' security-related events like Approved and rejected requests, Updated four-eyes authorization settings, Updated settings for users and user groups, Assigned roles, Added or deleted users and user groups\n- 'Get All Repositories States' – storage capacity, free/used space, repository info\n- 'VBR Get All Sessions' – session history, run times, success/failure details. Optional: hostName filters by job name\n- 'VBR Get Restore Points' – available restore points for a VM. Use hostName (VM name) as parameter\n- 'VBR Get All Tasks' – currently running background tasks in VBR\n- 'VBR Get Server Info' – Backup server name, build number and cumulative patches installed on the backup server.\n- 'Research Agent' – external queries: CVEs from NIST NVD, latest Veeam release version. Pass the full question as 'query'.\n\n## Rules\n- VM questions: always run vCenter lookup first → then Inventory → store objectId\n- Never execute backups or jobs without explicit user confirmation\n- Use the last 24 hours if no timeframe has been given.\n- Do not guess or derive identifiers\n- Output: each tool result in a separate labeled section\n- Keep the answers short\n- Never show results outside of the requested timeframe\n- For 'last backup' / 'when was X last backed up' questions: use VBR Get Restore Points (after VM lookup)\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -543,6 +543,62 @@
     },
     {
       "parameters": {
+        "content": "## 🌐 Intelligence & Security Research\nUses Claude Haiku to minimize token costs.\n",
+        "height": 240,
+        "width": 440,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        640,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "bp000001-0000-0000-0000-000000000002",
+      "name": "Sticky Note Intelligence"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "RESEARCH_AGENT_WORKFLOW_PLACEHOLDER",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/RESEARCH_AGENT_WORKFLOW_PLACEHOLDER",
+          "cachedResultName": "BackupPaw Research Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', `The full research question to answer`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": false,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        688
+      ],
+      "id": "bp000001-0000-0000-0000-000000000001",
+      "name": "Call 'Research Agent'"
+    },
+    {
+      "parameters": {
         "workflowId": {
           "__rl": true,
           "value": "SESSIONS_WORKFLOW_PLACEHOLDER",
@@ -927,6 +983,17 @@
       ]
     },
     "Call 'VBR Get Server Info'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Research Agent'": {
       "ai_tool": [
         [
           {
