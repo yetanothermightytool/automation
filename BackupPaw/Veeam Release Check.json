@@ -3,20 +3,25 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Setup\nReplace **YOUR-VEEAM-RELEASE-URL** in the HTTP Request node with the URL you use to check for the latest Veeam Backup & Replication release.\n\nSuggested source: Veeam Help Center release notes or your internal patch management system.",
-        "height": 160,
+        "content": "## Veeam Release Check\nFetches https://www.veeam.com/kb2680 and extracts the 3 most recent releases for VBR v13 and v12.",
+        "height": 120,
         "width": 440,
         "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-480, -220],
+      "position": [-480, -180],
       "id": "vrc00001-0000-0000-0000-000000000000",
       "name": "Setup Note"
     },
     {
       "parameters": {
-        "inputSource": "passthrough"
+        "inputSource": "workflowInputData",
+        "workflowInputs": {
+          "values": [
+            { "name": "hostName", "type": "string" }
+          ]
+        }
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
@@ -26,14 +31,24 @@
     },
     {
       "parameters": {
-        "url": "https://YOUR-VEEAM-RELEASE-URL",
+        "url": "https://www.veeam.com/kb2680",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [-240, 0],
       "id": "vrc00001-0000-0000-0000-000000000002",
-      "name": "Veeam Release Check"
+      "name": "Fetch KB2680"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.data;\n\nconst rowRegex = /<tr[\\s\\S]*?<\\/tr>/gi;\nconst stripTags = s => s.replace(/<[^>]+>/g, '').replace(/\\s+/g, ' ').trim();\n\nconst v12 = [];\nconst v13 = [];\n\nlet rowMatch;\nwhile ((rowMatch = rowRegex.exec(html)) !== null) {\n  const cells = [];\n  const cellRe = /<td[\\s\\S]*?>(.*?)<\\/td>/gi;\n  let cellMatch;\n  while ((cellMatch = cellRe.exec(rowMatch[0])) !== null) {\n    cells.push(stripTags(cellMatch[1]));\n  }\n  if (cells.length >= 3 && /^\\d+\\.\\d+\\.\\d+\\.\\d+$/.test(cells[1])) {\n    const entry = { version: cells[0], build: cells[1], releaseDate: cells[2] };\n    if (cells[1].startsWith('13.')) v13.push(entry);\n    else if (cells[1].startsWith('12.')) v12.push(entry);\n  }\n}\n\nconst results = [...v13.slice(0, 3), ...v12.slice(0, 3)];\nreturn results.map(r => ({ json: r }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "vrc00001-0000-0000-0000-000000000003",
+      "name": "Extract Versions"
     }
   ],
   "connections": {
@@ -41,7 +56,18 @@
       "main": [
         [
           {
-            "node": "Veeam Release Check",
+            "node": "Fetch KB2680",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch KB2680": {
+      "main": [
+        [
+          {
+            "node": "Extract Versions",
             "type": "main",
             "index": 0
           }
