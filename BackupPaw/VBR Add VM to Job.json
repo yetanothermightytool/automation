@@ -8,7 +8,7 @@
             { "name": "jobId" },
             { "name": "vmName" },
             { "name": "objectId" },
-            { "name": "vcName" }
+            { "name": "hostName" }
           ]
         }
       },
@@ -52,7 +52,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const trigger  = $('Execute Workflow Trigger').item.json;\nconst job      = $input.first().json;\nconst includes = job.virtualMachines?.includes ?? [];\n\n// Check if any include is not an individual VM (Tag, ResourcePool, Folder, Cluster, Datacenter, etc.)\nconst nonVmTypes = includes.filter(i => i.type !== 'VirtualMachine');\nif (nonVmTypes.length > 0) {\n  const types = [...new Set(nonVmTypes.map(i => i.type))].join(', ');\n  return [{ json: {\n    tagBased: true,\n    message: `Job '${job.name}' uses container-based selection (${types}). Adding individual VMs is not supported. Consider creating a new job for this VM, or add it to a job that uses individual VM selection.`\n  }}];\n}\n\n// Build updated includes with new VM appended\nconst newIncludes = [\n  ...includes,\n  {\n    type: 'VirtualMachine',\n    vcName: trigger.vcName,\n    name: trigger.vmName,\n    objectId: trigger.objectId\n  }\n];\n\n// Return full job model with updated includes\nconst updatedJob = JSON.parse(JSON.stringify(job));\nupdatedJob.virtualMachines.includes = newIncludes;\n\nreturn [{ json: { tagBased: false, updatedJob } }];"
+        "jsCode": "const trigger  = $('Execute Workflow Trigger').item.json;\nconst job      = $input.first().json;\nconst includes = job.virtualMachines?.includes ?? [];\n\n// Check if any include is not an individual VM (Tag, ResourcePool, Folder, Cluster, Datacenter, etc.)\nconst nonVmTypes = includes.filter(i => i.type !== 'VirtualMachine');\nif (nonVmTypes.length > 0) {\n  const types = [...new Set(nonVmTypes.map(i => i.type))].join(', ');\n  return [{ json: {\n    tagBased: true,\n    message: `Job '${job.name}' uses container-based selection (${types}). Adding individual VMs is not supported. Consider creating a new job for this VM, or add it to a job that uses individual VM selection.`\n  }}];\n}\n\n// Ensure all existing includes have platform set\nconst sanitizedIncludes = includes.map(i => ({\n  ...i,\n  platform: i.platform || 'VSphere'\n}));\n\n// Build updated includes with new VM appended\nconst newIncludes = [\n  ...sanitizedIncludes,\n  {\n    platform: 'VSphere',\n    type: 'VirtualMachine',\n    name: trigger.vmName,\n    objectId: trigger.objectId,\n    hostName: trigger.hostName\n  }\n];\n\n// Return full job model with updated includes\nconst updatedJob = JSON.parse(JSON.stringify(job));\nupdatedJob.virtualMachines.includes = newIncludes;\n\nreturn [{ json: { tagBased: false, updatedJob } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
