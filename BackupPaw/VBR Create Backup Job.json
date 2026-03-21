@@ -9,7 +9,7 @@
             { "name": "jobDescription" },
             { "name": "vmName" },
             { "name": "objectId" },
-            { "name": "vcName" },
+            { "name": "hostName" },
             { "name": "repositoryId" },
             { "name": "retentionPoints" },
             { "name": "scheduleTime" }
@@ -49,7 +49,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  type: 'VSphereBackup',\n  name: $('Execute Workflow Trigger').item.json.jobName,\n  description: $('Execute Workflow Trigger').item.json.jobDescription || 'Created by BackupPaw',\n  isHighPriority: false,\n  virtualMachines: {\n    includes: [{\n      platform: 'VSphere',\n      type: 'VirtualMachine',\n      vcName: $('Execute Workflow Trigger').item.json.vcName,\n      name: $('Execute Workflow Trigger').item.json.vmName,\n      objectId: $('Execute Workflow Trigger').item.json.objectId\n    }],\n    excludes: { vms: [], disks: [] }\n  },\n  storage: {\n    backupRepositoryId: $('Execute Workflow Trigger').item.json.repositoryId,\n    backupProxies: { autoSelectEnabled: true, proxyIds: [] },\n    retentionPolicy: {\n      type: 'RestorePoints',\n      quantity: parseInt($('Execute Workflow Trigger').item.json.retentionPoints) || 7\n    },\n    advancedSettings: {\n      backupModeType: 'Incremental',\n      synthenticFulls: { isEnabled: true, days: ['saturday'] }\n    }\n  },\n  schedule: {\n    isEnabled: true,\n    daily: {\n      dailyKind: 'Everyday',\n      isEnabled: true,\n      localTime: $('Execute Workflow Trigger').item.json.scheduleTime || '22:00'\n    },\n    retry: { isEnabled: true, retryCount: 3, awaitMinutes: 10 }\n  }\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  type: 'VSphereBackup',\n  name: $('Execute Workflow Trigger').item.json.jobName,\n  description: $('Execute Workflow Trigger').item.json.jobDescription || 'Created by BackupPaw',\n  isHighPriority: false,\n  virtualMachines: {\n    includes: [{\n      platform: 'VSphere',\n      type: 'VirtualMachine',\n      hostName: $('Execute Workflow Trigger').item.json.hostName,\n      name: $('Execute Workflow Trigger').item.json.vmName,\n      objectId: $('Execute Workflow Trigger').item.json.objectId\n    }],\n    excludes: { vms: [], disks: [] }\n  },\n  storage: {\n    backupRepositoryId: $('Execute Workflow Trigger').item.json.repositoryId,\n    backupProxies: { autoSelectEnabled: true, proxyIds: [] },\n    retentionPolicy: {\n      type: 'RestorePoints',\n      quantity: parseInt($('Execute Workflow Trigger').item.json.retentionPoints) || 7\n    },\n    advancedSettings: {\n      backupModeType: 'Incremental',\n      synthenticFulls: { isEnabled: true, days: ['saturday'] }\n    }\n  },\n  schedule: {\n    isEnabled: true,\n    daily: {\n      dailyKind: 'Everyday',\n      isEnabled: true,\n      localTime: $('Execute Workflow Trigger').item.json.scheduleTime || '22:00'\n    },\n    retry: { isEnabled: true, retryCount: 3, awaitMinutes: 10 }\n  }\n}) }}",
         "options": { "allowUnauthorizedCerts": true }
       },
       "type": "n8n-nodes-base.httpRequest",
