@@ -38,6 +38,16 @@
     },
     {
       "parameters": {
+        "jsCode": "const t = $('Execute Workflow Trigger').item.json;\n\nconst vmObject = {\n  type: 'VirtualMachine',\n  name: t.vmName,\n  objectId: t.objectId,\n  platform: 'VSphere',\n  hostName: t.hostName\n};\n\nconst body = {\n  type: 'VSphereBackup',\n  name: t.jobName,\n  description: t.jobDescription || 'Created by BackupPaw',\n  isHighPriority: false,\n  virtualMachines: {\n    includes: [vmObject],\n    excludes: {\n      vms: [],\n      disks: [],\n      templates: { isEnabled: false, excludeFromIncremental: false }\n    }\n  },\n  storage: {\n    backupRepositoryId: t.repositoryId,\n    backupProxies: { autoSelectEnabled: true, proxyIds: [] },\n    retentionPolicy: { type: 'RestorePoints', quantity: parseInt(t.retentionPoints) || 7 },\n    gfsPolicy: {\n      isEnabled: false,\n      weekly:  { desiredTime: 'sunday',  isEnabled: false, keepForNumberOfWeeks: 1 },\n      monthly: { desiredTime: 'First',   isEnabled: false, keepForNumberOfMonths: 1 },\n      yearly:  { desiredTime: 'January', isEnabled: false, keepForNumberOfYears: 1 }\n    },\n    advancedSettings: {\n      backupModeType: 'Incremental',\n      synthenticFulls: { isEnabled: true },\n      activeFulls: {\n        isEnabled: true,\n        weekly: { isEnabled: true, days: ['saturday'] },\n        monthly: { dayOfWeek: 'monday', dayNumberInMonth: 'First', isEnabled: false, dayOfMonth: 1,\n          months: ['January','February','March','April','May','June','July','August','September','October','November','December'] }\n      },\n      backupHealth: {\n        isEnabled: true,\n        weekly: { isEnabled: false, days: ['friday'] },\n        monthly: { dayOfWeek: 'monday', dayNumberInMonth: 'First', isEnabled: true, dayOfMonth: 1,\n          months: ['January','February','March','April','May','June','July','August','September','October','November','December'] }\n      },\n      fullBackupMaintenance: {\n        RemoveData: { isEnabled: false, afterDays: 14 },\n        defragmentAndCompact: {\n          isEnabled: false,\n          weekly:  { isEnabled: false, days: ['saturday'] },\n          monthly: { dayOfWeek: 'saturday', dayNumberInMonth: 'Last', isEnabled: false, dayOfMonth: 1,\n            months: ['January','February','March','April','May','June','July','August','September','October','November','December'] }\n        }\n      },\n      storageData: {\n        compressionLevel: 'Optimal',\n        storageOptimization: 'LocalTarget',\n        inlineDataDedupEnabled: true,\n        excludeSwapFileBlocks: true,\n        excludeDeletedFileBlocks: true,\n        encryption: { isEnabled: false }\n      },\n      notifications: {\n        sendSNMPNotifications: false,\n        emailNotifications: { isEnabled: false, notificationType: null, recipients: [], customNotificationSettings: null },\n        vmAttribute: { isEnabled: false, notes: '', appendToExistingValue: false }\n      },\n      vSphere: {\n        enableVMWareToolsQuiescence: false,\n        changedBlockTracking: { isEnabled: true, enableCBTautomatically: true, resetCBTonActiveFull: true }\n      },\n      storageIntegration: { isEnabled: true, processedVmsLimitEnabled: true, processedVmsCount: 13, failoverToStandardBackup: true },\n      scripts: {\n        preCommand:  { isEnabled: false, command: '' },\n        postCommand: { isEnabled: false, command: '' }\n      }\n    }\n  },\n  guestProcessing: {\n    appAwareProcessing: { isEnabled: false, appSettings: [] },\n    guestFSIndexing: { isEnabled: false, indexingSettings: [] },\n    guestInteractionProxies: { autoSelectEnabled: true, proxyIds: [] },\n    guestCredentials: { credentialsPerMachine: [], useAgentManagementCredentials: false }\n  },\n  schedule: {\n    daily: {\n      dailyKind: 'Everyday',\n      isEnabled: true,\n      localTime: t.scheduleTime || '22:00',\n      days: ['sunday','monday','tuesday','wednesday','thursday','friday','saturday']\n    },\n    monthly: {\n      dayOfWeek: 'saturday', dayNumberInMonth: 'Fourth', isEnabled: false,\n      localTime: '22:00', dayOfMonth: 1,\n      months: ['January','February','March','April','May','June','July','August','September','October','November','December']\n    },\n    periodically: { periodicallyKind: 'Hours', isEnabled: false, frequency: 0 },\n    retry: { isEnabled: true, retryCount: 3, awaitMinutes: 10 },\n    backupWindow: { isEnabled: false },\n    runAutomatically: true\n  }\n};\n\nreturn [{ json: { body: JSON.stringify(body) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-960, 128],
+      "id": "vjcj-0001-0000-0000-000000000005",
+      "name": "Build Job Body"
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/jobs",
         "sendHeaders": true,
@@ -49,12 +59,12 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  type: 'VSphereBackup',\n  name: $('Execute Workflow Trigger').item.json.jobName,\n  description: $('Execute Workflow Trigger').item.json.jobDescription || 'Created by BackupPaw',\n  isHighPriority: false,\n  virtualMachines: {\n    includes: [{\n      platform: 'VSphere',\n      type: 'VirtualMachine',\n      hostName: $('Execute Workflow Trigger').item.json.hostName,\n      name: $('Execute Workflow Trigger').item.json.vmName,\n      objectId: $('Execute Workflow Trigger').item.json.objectId\n    }],\n    excludes: { vms: [], disks: [] }\n  },\n  storage: {\n    backupRepositoryId: $('Execute Workflow Trigger').item.json.repositoryId,\n    backupProxies: { autoSelectEnabled: true, proxyIds: [] },\n    retentionPolicy: {\n      type: 'RestorePoints',\n      quantity: parseInt($('Execute Workflow Trigger').item.json.retentionPoints) || 7\n    },\n    advancedSettings: {\n      backupModeType: 'Incremental',\n      synthenticFulls: { isEnabled: true, days: ['saturday'] }\n    }\n  },\n  schedule: {\n    isEnabled: true,\n    daily: {\n      dailyKind: 'Everyday',\n      isEnabled: true,\n      localTime: $('Execute Workflow Trigger').item.json.scheduleTime || '22:00'\n    },\n    retry: { isEnabled: true, retryCount: 3, awaitMinutes: 10 }\n  }\n}) }}",
+        "jsonBody": "={{ $json.body }}",
         "options": { "allowUnauthorizedCerts": true }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-960, 128],
+      "position": [-720, 128],
       "id": "vjcj-0001-0000-0000-000000000003",
       "name": "Create Backup Job"
     },
@@ -73,14 +83,15 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [-720, 128],
+      "position": [-480, 128],
       "id": "vjcj-0001-0000-0000-000000000004",
       "name": "Format Output"
     }
   ],
   "connections": {
     "Execute Workflow Trigger": { "main": [[{ "node": "Get Bearer Token", "type": "main", "index": 0 }]] },
-    "Get Bearer Token": { "main": [[{ "node": "Create Backup Job", "type": "main", "index": 0 }]] },
+    "Get Bearer Token": { "main": [[{ "node": "Build Job Body", "type": "main", "index": 0 }]] },
+    "Build Job Body": { "main": [[{ "node": "Create Backup Job", "type": "main", "index": 0 }]] },
     "Create Backup Job": { "main": [[{ "node": "Format Output", "type": "main", "index": 0 }]] }
   },
   "active": false,
