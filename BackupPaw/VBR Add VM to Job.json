@@ -1,0 +1,161 @@
+{
+  "name": "VBR Add VM to Job",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            { "name": "jobId" },
+            { "name": "vmName" },
+            { "name": "objectId" },
+            { "name": "vcName" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-1680, 128],
+      "id": "vavj-0001-0000-0000-000000000001",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [-1440, 128],
+      "id": "vavj-0001-0000-0000-000000000002",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "REPLACE_WITH_VBR_CREDENTIAL_ID",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/jobs/{{ $('Execute Workflow Trigger').item.json.jobId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}" },
+            { "name": "x-api-version", "value": "={{ $('Get Bearer Token').item.json.apiVersion }}" }
+          ]
+        },
+        "options": { "allowUnauthorizedCerts": true }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1200, 128],
+      "id": "vavj-0001-0000-0000-000000000003",
+      "name": "Get Job"
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger  = $('Execute Workflow Trigger').item.json;\nconst job      = $input.first().json;\nconst includes = job.virtualMachines?.includes ?? [];\n\n// Check if any include is not an individual VM (Tag, ResourcePool, Folder, Cluster, Datacenter, etc.)\nconst nonVmTypes = includes.filter(i => i.type !== 'VirtualMachine');\nif (nonVmTypes.length > 0) {\n  const types = [...new Set(nonVmTypes.map(i => i.type))].join(', ');\n  return [{ json: {\n    tagBased: true,\n    message: `Job '${job.name}' uses container-based selection (${types}). Adding individual VMs is not supported. Consider creating a new job for this VM, or add it to a job that uses individual VM selection.`\n  }}];\n}\n\n// Build updated includes with new VM appended\nconst newIncludes = [\n  ...includes,\n  {\n    type: 'VirtualMachine',\n    vcName: trigger.vcName,\n    name: trigger.vmName,\n    objectId: trigger.objectId\n  }\n];\n\n// Return full job model with updated includes\nconst updatedJob = JSON.parse(JSON.stringify(job));\nupdatedJob.virtualMachines.includes = newIncludes;\n\nreturn [{ json: { tagBased: false, updatedJob } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-960, 128],
+      "id": "vavj-0001-0000-0000-000000000004",
+      "name": "Check and Build Updated Job"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "vavj-cond-001",
+              "leftValue": "={{ $json.tagBased }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equal" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-720, 128],
+      "id": "vavj-0001-0000-0000-000000000005",
+      "name": "IF: Tag/Container Based?"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/jobs/{{ $('Execute Workflow Trigger').item.json.jobId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}" },
+            { "name": "x-api-version", "value": "={{ $('Get Bearer Token').item.json.apiVersion }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Check and Build Updated Job').item.json.updatedJob) }}",
+        "options": { "allowUnauthorizedCerts": true }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-480, 0],
+      "id": "vavj-0001-0000-0000-000000000006",
+      "name": "Update Job"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "vavj-set-001", "name": "success", "value": true, "type": "boolean" },
+            { "id": "vavj-set-002", "name": "jobId", "value": "={{ $json.id }}", "type": "string" },
+            { "id": "vavj-set-003", "name": "jobName", "value": "={{ $json.name }}", "type": "string" },
+            { "id": "vavj-set-004", "name": "message", "value": "=VM '{{ $('Execute Workflow Trigger').item.json.vmName }}' successfully added to backup job '{{ $json.name }}'.", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-240, 0],
+      "id": "vavj-0001-0000-0000-000000000007",
+      "name": "Success Output"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "vavj-set-005", "name": "success", "value": false, "type": "boolean" },
+            { "id": "vavj-set-006", "name": "message", "value": "={{ $('Check and Build Updated Job').item.json.message }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-480, 280],
+      "id": "vavj-0001-0000-0000-000000000008",
+      "name": "Container Based Output"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": { "main": [[{ "node": "Get Bearer Token", "type": "main", "index": 0 }]] },
+    "Get Bearer Token": { "main": [[{ "node": "Get Job", "type": "main", "index": 0 }]] },
+    "Get Job": { "main": [[{ "node": "Check and Build Updated Job", "type": "main", "index": 0 }]] },
+    "Check and Build Updated Job": { "main": [[{ "node": "IF: Tag/Container Based?", "type": "main", "index": 0 }]] },
+    "IF: Tag/Container Based?": {
+      "main": [
+        [{ "node": "Container Based Output", "type": "main", "index": 0 }],
+        [{ "node": "Update Job", "type": "main", "index": 0 }]
+      ]
+    },
+    "Update Job": { "main": [[{ "node": "Success Output", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1", "availableInMCP": false },
+  "meta": { "templateCredsSetupCompleted": false },
+  "id": "VBR_ADD_VM_JOB_WORKFLOW_PLACEHOLDER",
+  "tags": []
+}

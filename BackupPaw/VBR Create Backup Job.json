@@ -1,0 +1,90 @@
+{
+  "name": "VBR Create Backup Job",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            { "name": "jobName" },
+            { "name": "vmName" },
+            { "name": "objectId" },
+            { "name": "vcName" },
+            { "name": "repositoryId" },
+            { "name": "retentionPoints" },
+            { "name": "scheduleTime" }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-1440, 128],
+      "id": "vjcj-0001-0000-0000-000000000001",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [-1200, 128],
+      "id": "vjcj-0001-0000-0000-000000000002",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "REPLACE_WITH_VBR_CREDENTIAL_ID",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/jobs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}" },
+            { "name": "x-api-version", "value": "={{ $('Get Bearer Token').item.json.apiVersion }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  type: 'Backup',\n  name: $('Execute Workflow Trigger').item.json.jobName,\n  isHighPriority: false,\n  virtualMachines: {\n    includes: [{\n      type: 'VirtualMachine',\n      vcName: $('Execute Workflow Trigger').item.json.vcName,\n      name: $('Execute Workflow Trigger').item.json.vmName,\n      objectId: $('Execute Workflow Trigger').item.json.objectId\n    }],\n    excludes: { vms: [], disks: [] }\n  },\n  storage: {\n    backupRepositoryId: $('Execute Workflow Trigger').item.json.repositoryId,\n    backupProxies: { autoSelectEnabled: true, proxyIds: [] },\n    retentionPolicy: {\n      type: 'RestorePoints',\n      quantity: parseInt($('Execute Workflow Trigger').item.json.retentionPoints) || 7\n    },\n    advancedSettings: {\n      backupModeType: 'Incremental',\n      synthenticFulls: { isEnabled: true, days: ['saturday'] }\n    }\n  },\n  schedule: {\n    isEnabled: true,\n    daily: {\n      dailyKind: 'Everyday',\n      isEnabled: true,\n      localTime: $('Execute Workflow Trigger').item.json.scheduleTime || '22:00'\n    },\n    retry: { isEnabled: true, retryCount: 3, awaitMinutes: 10 }\n  }\n}) }}",
+        "options": { "allowUnauthorizedCerts": true }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-960, 128],
+      "id": "vjcj-0001-0000-0000-000000000003",
+      "name": "Create Backup Job"
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "vjcj-set-001", "name": "success", "value": true, "type": "boolean" },
+            { "id": "vjcj-set-002", "name": "jobId", "value": "={{ $json.id }}", "type": "string" },
+            { "id": "vjcj-set-003", "name": "jobName", "value": "={{ $json.name }}", "type": "string" },
+            { "id": "vjcj-set-004", "name": "message", "value": "=Backup job '{{ $json.name }}' created successfully for VM '{{ $('Execute Workflow Trigger').item.json.vmName }}'.", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-720, 128],
+      "id": "vjcj-0001-0000-0000-000000000004",
+      "name": "Format Output"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": { "main": [[{ "node": "Get Bearer Token", "type": "main", "index": 0 }]] },
+    "Get Bearer Token": { "main": [[{ "node": "Create Backup Job", "type": "main", "index": 0 }]] },
+    "Create Backup Job": { "main": [[{ "node": "Format Output", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1", "availableInMCP": false },
+  "meta": { "templateCredsSetupCompleted": false },
+  "id": "VBR_CREATE_JOB_WORKFLOW_PLACEHOLDER",
+  "tags": []
+}
