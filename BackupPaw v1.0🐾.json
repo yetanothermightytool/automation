@@ -1,0 +1,955 @@
+{
+  "name": "BackupPaw - Research🐾",
+  "nodes": [
+    {
+      "parameters": {
+        "availableInChat": true,
+        "agentIcon": {
+          "type": "emoji",
+          "value": "🐾"
+        },
+        "agentName": "BackupPaw",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -800,
+        400
+      ],
+      "id": "d5001fd3-92c8-422f-9fbd-4f86559247c2",
+      "name": "When chat message received",
+      "webhookId": "ee04e9a7-aac3-4f0f-8887-61f2465c8dbf",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1056,
+        848
+      ],
+      "id": "44c57b35-9ea4-4600-b8c7-bf49b3f18972",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        0
+      ],
+      "id": "3bf5d6b4-08c8-48cf-baf9-ce17c90b8bb0",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# You are BackupPaw, an advanced AI assistant for backup and management.\nDate: {{ $now }}\n\n## Tools\n- 'Get vCenter Information Table Query' – always run first when question is about VMs or hosts.\n- 'VBR Get Inventory Object' – VM details + objectId (always run after vCenter lookup)\n- 'VBR Get All Jobs' – job configuration, which jobs exist if no hostname is specified\n- 'VBR Get All Jobs' With hostname as parameter to check if host is in a job configuration\n- 'VBR Get All Job Status' – current status, running/finished/failed\n- 'VBR Start Backup Job' – start a scheduled job\n- 'VBR Create Quick Backup' – ad-hoc backup for a specific host. Use the objectId as the parameter\n- 'Get All Malware Events' – malware events, no hostname required unless explicitly requested\n- 'Get All Authorization Events' security-related events like Approved and rejected requests, Updated four-eyes authorization settings, Updated settings for users and user groups, Assigned roles, Added or deleted users and user groups\n- 'Get All Repositories States' – storage capacity, free/used space, repository info\n- 'VBR Get All Sessions' – session history, run times, success/failure details. Optional: hostName filters by job name\n- 'VBR Get Restore Points' – available restore points for a VM. Use hostName (VM name) as parameter\n- 'VBR Get All Tasks' – currently running background tasks in VBR\n- 'VBR Get Server Info' – Backup server name, build number and cumulative patches installed on the backup server.\n- 'Research Agent' – external queries: CVEs from NIST NVD, latest Veeam release version. Pass the full question as 'query'.\n- 'Entra ID Agent' – external queries: is item backed up, compare with production. Pass the full question as 'query'.\n\n## Rules\n- VM questions: always run vCenter lookup first → then Inventory → store objectId\n- Never execute backups or jobs without explicit user confirmation\n- Use the last 24 hours if no timeframe has been given.\n- Do not guess or derive identifiers\n- Output: each tool result in a separate labeled section\n- Keep the answers short\n- Never show results outside of the requested timeframe\n- For 'last backup' / 'when was X last backed up' questions: use VBR Get Restore Points (after VM lookup)\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -496,
+        400
+      ],
+      "id": "126601c3-074a-48fd-9907-b289aaa0f42f",
+      "name": "🧠  The Brain",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "bAmlkgR7vZ7osAhF",
+          "mode": "list",
+          "cachedResultName": "Env-Settings",
+          "cachedResultUrl": "/projects/gkAw8jOwH8KZlbiW/datatables/bAmlkgR7vZ7osAhF"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "item",
+              "keyValue": "vCenter"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        -1056,
+        720
+      ],
+      "id": "0f087569-3bc0-4a9b-a3c2-b9fe6b318485",
+      "name": "Get vCenter Information"
+    },
+    {
+      "parameters": {
+        "content": "## 🛠️ Tools (tables and more)\n",
+        "height": 304,
+        "width": 496,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1088,
+        656
+      ],
+      "typeVersion": 1,
+      "id": "c77955da-5645-4ef8-9638-29c5bd0b8462",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "IcnHG39z2fArlUKx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/IcnHG39z2fArlUKx",
+          "cachedResultName": "VBR-Get-Inventory-Object"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "vCenter": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('vCenter', ``, 'string') }}",
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "vCenter",
+              "displayName": "vCenter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -768,
+        1088
+      ],
+      "id": "425baaa5-7293-42a6-ae00-5833dfd7bbc7",
+      "name": "Call 'VBR Get Inventory Object'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "CHkTDLam0tl3dpxm",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/CHkTDLam0tl3dpxm",
+          "cachedResultName": "VBR Get All Repositories"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -1056,
+        1088
+      ],
+      "id": "09ccabd6-d69e-4ac7-b60a-53a7e08ab571",
+      "name": "Call 'VBR Get All Repositories'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "regU5Em6xzIAVpme",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/regU5Em6xzIAVpme",
+          "cachedResultName": "VBR Get All Repositories States"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -928,
+        1088
+      ],
+      "id": "f1c5f25b-d4dd-406e-8f9b-69f63e1437e4",
+      "name": "Call 'VBR Get All Repositories States'"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -928,
+        720
+      ],
+      "id": "671ef503-2cec-4052-a863-2bb6bdeb3a5b",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "content": "## Veeam Infrastructure\n",
+        "height": 384,
+        "width": 496,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1088,
+        1008
+      ],
+      "typeVersion": 1,
+      "id": "b2af928c-edb1-4ec1-847b-b0f04695c69b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FepidoQUeBDnsEWk",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FepidoQUeBDnsEWk",
+          "cachedResultName": "VBR Get All Malware Events"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -512,
+        1104
+      ],
+      "id": "efc11fbb-7abf-4334-8493-c2347d1e6b86",
+      "name": "Call 'VBR Get All Malware Events'"
+    },
+    {
+      "parameters": {
+        "content": "## Backup Job Management\n",
+        "height": 272,
+        "width": 320,
+        "color": "#96D784"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "6a753b5d-93ae-478a-8723-3cd3adebf007",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Security & Compliance",
+        "height": 384,
+        "width": 608,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -544,
+        1008
+      ],
+      "typeVersion": 1,
+      "id": "61a9ac3b-930b-4317-9814-b4e093a58dc2",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Monitoring & Recovery\n",
+        "height": 384,
+        "width": 496,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        1008
+      ],
+      "typeVersion": 1,
+      "id": "334ca55a-43e4-4ff9-8983-d2c8e4743805",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## 🌐 Intelligence & Security Research\nUses Claude Haiku to minimize token costs.\n",
+        "height": 240,
+        "width": 440,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        592,
+        1008
+      ],
+      "typeVersion": 1,
+      "id": "731aaaa0-ca51-4fe7-8e1e-1bd4e3c7dca1",
+      "name": "Sticky Note Intelligence"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "SESSIONS_WORKFLOW_PLACEHOLDER",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/SESSIONS_WORKFLOW_PLACEHOLDER",
+          "cachedResultName": "VBR Get All Sessions"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        1104
+      ],
+      "id": "38d1cc82-6bbf-41fd-be84-7750497d73fd",
+      "name": "Call 'VBR Get All Sessions'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "RESTOREPOINTS_WORKFLOW_PLACEHOLDER",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/RESTOREPOINTS_WORKFLOW_PLACEHOLDER",
+          "cachedResultName": "VBR Get Restore Points"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        1104
+      ],
+      "id": "f716d50b-e0a7-4d0c-bae1-e81cc86fc14a",
+      "name": "Call 'VBR Get Restore Points'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "TASKS_WORKFLOW_PLACEHOLDER",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/TASKS_WORKFLOW_PLACEHOLDER",
+          "cachedResultName": "VBR Get All Tasks"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        1104
+      ],
+      "id": "b5714b72-8b83-417c-ad9c-6f8bb7547ba5",
+      "name": "Call 'VBR Get All Tasks'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "0VKfnzrUwrYiC1lm",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/0VKfnzrUwrYiC1lm",
+          "cachedResultName": "VBR Get All Authorization Events"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -384,
+        1104
+      ],
+      "id": "ecbd11c2-f7ab-440b-a85d-8ed02db02c14",
+      "name": "Call 'VBR Get All Authorization Events'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "UhYGiC9VUPyNtQvZ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/UhYGiC9VUPyNtQvZ",
+          "cachedResultName": "VBR Get Server Info"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -1040,
+        1248
+      ],
+      "id": "a5772cfc-e01f-4b6a-b678-2a87a03d0130",
+      "name": "Call 'VBR Get Server Info'"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -784,
+        720
+      ],
+      "id": "8d2015cb-b6c7-4bfa-881e-f74ec9bf6408",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "WCuP4jHl50hQcI53",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "NjdM9nqD7BkWdfWA",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/NjdM9nqD7BkWdfWA",
+          "cachedResultName": "BackupPaw Research Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        1104
+      ],
+      "id": "53bb0bf6-1f3c-4e3e-be9c-51c9e427263d",
+      "name": "Call 'BackupPaw Research Agent'"
+    },
+    {
+      "parameters": {
+        "content": "## Entra ID Backups\n",
+        "height": 272,
+        "width": 320,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        80,
+        272
+      ],
+      "id": "39168fec-b704-4547-8b7f-c5d548c33e5d",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "cgaNan61CarMOYD3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/cgaNan61CarMOYD3",
+          "cachedResultName": "Entra ID Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        384
+      ],
+      "id": "a95df7fb-74de-4008-976f-5a197199de82",
+      "name": "Call 'Entra ID Agent'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "z23zJlYZpLuVtcmK",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/z23zJlYZpLuVtcmK",
+          "cachedResultName": "Backup Job Management Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        656
+      ],
+      "id": "4a136017-bcf5-4aea-9021-770a63297812",
+      "name": "Call 'Backup Job Management'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠  The Brain": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get vCenter Information": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Get Inventory Object'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Get All Repositories'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Get All Repositories States'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Get All Malware Events'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Get All Authorization Events'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Get All Sessions'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Get Restore Points'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Get All Tasks'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Get Server Info'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'BackupPaw Research Agent'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Entra ID Agent'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Backup Job Management'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6262d2ba-6400-48f7-84a3-ed06f657197d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "D3P5hS3sMcij8dyP",
+  "tags": []
+}
