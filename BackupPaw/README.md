@@ -46,17 +46,13 @@ Chat Input
 |---|---|
 | Get vCenter Information | Reads vCenter FQDN from `Env-Settings` DataTable |
 | VBR Get Inventory Object | Fetches VM details and `objectId` from VBR |
-| VBR Get All Jobs | Lists backup job configurations, optional `hostName` filter |
-| VBR Get All Job States | Current job status (running / finished / failed) |
-| VBR Start Job | Starts a scheduled job by `jobId` |
-| VBR Create Quick Backup | Ad-hoc backup for a VM using `objectId` |
-| VBR Get All Repositories | Repository list and configuration |
 | VBR Get All Repositories States | Storage capacity and free space |
 | VBR Get All Sessions | Session history with optional `hostName` filter |
 | VBR Get Restore Points | Available restore points filtered by VM name |
 | VBR Get All Tasks | Currently running background tasks |
 | VBR Get All Malware Events | Malware detection events |
 | VBR Get All Authorization Events | Security and permission-related audit events |
+| Backup Job Management Agent | Sub-agent for all backup job operations (list, start, create, edit) |
 | BackupPaw Research Agent | Sub-agent for CVE lookups and Veeam release checks |
 | Entra ID Agent | Sub-agent for Entra ID backup queries and comparisons |
 
@@ -69,6 +65,29 @@ Each tool is implemented as a separate sub-workflow called via `toolWorkflow` no
 Import all sub-workflow JSON files into n8n, then replace the placeholders in the `BackupPaw 🐾` workflow with the actual workflow IDs assigned after import.
 
 Assign the **Veeam Data Platform REST API** credential to the `Get Bearer Token` node in each VBR sub-workflow.
+
+---
+
+## Backup Job Management Agent
+
+The **Backup Job Management Agent** is a separate sub-agent using Claude Haiku that handles all backup job operations. The Brain delegates all job-related requests to this agent.
+
+| Sub-Workflow | Description |
+|---|---|
+| VBR Get All Jobs | Lists backup job configurations, optional name filter |
+| VBR Get All Job States | Current job status (running / finished / failed) |
+| VBR Get All Repositories | Repository list with IDs and free space |
+| VBR Start Job | Starts a scheduled job by `jobId` |
+| VBR Create Quick Backup | Ad-hoc backup for a VM using `objectId` |
+| VBR Create Backup Job | Creates a new scheduled backup job for a VM |
+| VBR Add VM to Job | Adds a VM to an existing backup job |
+
+**Notes:**
+- The agent always asks for explicit confirmation before creating or modifying jobs
+- If a VM is not in any job, the agent will suggest adding it to an existing job or creating a new one
+- Jobs using tag- or container-based selection (ResourcePool, Folder, Cluster, etc.) cannot have individual VMs added — the agent will report this and suggest alternatives
+- `VBR Add VM to Job` reads the full job configuration first and writes back the complete model — partial updates are not supported by the API
+- `VBR Create Backup Job` and `VBR Add VM to Job` require `vmName`, `objectId` and `hostName` (vCenter FQDN). The Brain resolves these automatically via the inventory lookup — the user does not need to provide them
 
 ---
 
@@ -91,10 +110,10 @@ The **Entra ID Agent** is a separate sub-agent using Claude Haiku to query Entra
 
 | Sub-Workflow | Description |
 |---|---|
-| Entra ID Check Backup | Checks if a User, Group, or Application exists in the backup and in production |
-| Entra ID Compare Production | Checks backup existence and compares item properties with current production state |
+| VBR Entra ID Check Backup | Checks if a User, Group, or Application exists in the backup |
+| VBR Entra ID Compare Production | Checks backup existence and compares item properties with current production state |
 
-The agent determines which tool to use based on the query — simple existence checks use `Entra ID Check Backup`, while change detection uses `Entra ID Compare Production`.
+The agent determines which tool to use based on the query — simple existence checks use `VBR Entra ID Check Backup`, while change detection uses `VBR Entra ID Compare Production`.
 
 ---
 
@@ -105,6 +124,9 @@ The agent determines which tool to use based on the query — simple existence c
 - `Are there any malware events in the last 24 hours?`
 - `How much free space is left on the backup repositories?`
 - `Start a quick backup for vm-app-03.` *(requires confirmation)*
+- `VM app-07 is not in any backup job — what should I do?`
+- `Add vm-db-05 to the job 'Daily-Prod-Backup'.` *(requires confirmation)*
+- `Create a new backup job for vm-web-02.` *(agent will ask for parameters)*
 - `Are there any critical CVEs for Veeam in the last 7 days?`
 - `What is the latest VBR release?`
 - `Is user john.doe@contoso.com backed up in Entra ID?`
@@ -125,8 +147,8 @@ The agent determines which tool to use based on the query — simple existence c
 
 ## Agent Behavior
 
-- **VM lookups** always follow the chain: vCenter → Inventory Object → store `objectId`
-- **Actions** (start job, quick backup) require explicit user confirmation before execution
+- **VM lookups** always follow the chain: vCenter → Inventory Object → store `vmName`, `objectId` and `hostName` (vCenter FQDN)
+- **Actions** (start job, quick backup, create job, add VM) require explicit user confirmation before execution
 - **Default timeframe** is the last 24 hours when none is specified
 - **Last backup queries** use `VBR Get Restore Points` after VM lookup
-- **Research and Entra ID queries** are delegated to dedicated sub-agents running Claude Haiku
+- **Job, Research, and Entra ID queries** are delegated to dedicated sub-agents running Claude Haiku
