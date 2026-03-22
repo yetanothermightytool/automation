@@ -4,7 +4,7 @@
     {
       "parameters": {
         "content": "## Security & Compliance Agent\nSub-agent called by The Brain for all security and compliance operations.\n\n**Assign your Chat Model to the AI Agent node.**\nAfter importing all sub-workflows, replace the placeholder IDs below.\n\nThis agent handles:\n- Querying malware detection events\n- Querying authorization and audit events\n- Scanning backups for malware\n- Retrieving scan results",
-        "height": 220,
+        "height": 236,
         "width": 520,
         "color": 3
       },
@@ -14,7 +14,7 @@
         0,
         0
       ],
-      "id": "aa000001-0000-0000-0000-000000000001",
+      "id": "2acfe452-df41-4cb6-b152-f2b50f96a7dc",
       "name": "Setup Note"
     },
     {
@@ -33,7 +33,7 @@
         0,
         304
       ],
-      "id": "aa000002-0000-0000-0000-000000000002",
+      "id": "fb56e76b-d106-4a9b-b626-e711ff3a9af4",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -44,7 +44,7 @@
         0,
         720
       ],
-      "id": "aa000003-0000-0000-0000-000000000003",
+      "id": "970ca816-659f-4b43-9c30-1ac34600e463",
       "name": "Think"
     },
     {
@@ -52,7 +52,7 @@
         "promptType": "define",
         "text": "={{ $json.query }}",
         "options": {
-          "systemMessage": "You are a Veeam Backup & Replication security and compliance assistant.\n\n## Tools available\n- **VBR Get All Malware Events** — retrieve malware detection events, optionally filtered by VM name. Use `hostName` as filter.\n- **VBR Get All Authorization Events** — retrieve security audit events (permission changes, role assignments, approved/rejected requests).\n- **VBR Scan Backup** — scan a VM's backup for malware using the antivirus engine. Requires `vmName` and optionally `daysBack` (default: 7).\n- **VBR Get Scan Results** — poll a scan session until completed and return per-restore-point results. Requires `sessionId` from a prior VBR Scan Backup call.\n\n## Rules\n1. **Default timeframe** is the last 24 hours when none is specified for event queries.\n2. **Scanning flow** — always call VBR Scan Backup first, then immediately pass the returned `sessionId` to VBR Get Scan Results. Never call VBR Get Scan Results without a prior scan.\n3. **Scan confirmation** — always ask the user for explicit confirmation before starting a scan.\n4. **Scan results** — report each restore point with `name`, `scanResult` and `antivirusName`. If `summary.hasThreats` is `true`, clearly highlight infected restore points and recommend immediate action.\n5. **Possible scan results**: `Clean`, `Infected`, `Failed`, `Canceled`, `Inconclusive`, `None`.\n6. **Multiple VMs** — if the user requests a scan for all VMs affected by malware events, first call VBR Get All Malware Events to get the VM names, then call VBR Scan Backup for each VM individually after confirmation.\n7. Never display internal identifiers (objectId, platformId) in responses."
+          "systemMessage": "You are a Veeam Backup & Replication security and compliance assistant.\n\n## Tools available\n- **VBR Get All Malware Events** — retrieve malware detection events, optionally filtered by VM name. Use `hostName` as filter.\n- **VBR Get All Authorization Events** — retrieve security audit events (permission changes, role assignments, approved/rejected requests).\n- **VBR Scan Backup** — scan a VM's backup for malware using the antivirus engine. Requires `vmName` and optionally `daysBack` (default: 7).\n- **VBR Get Scan Results** — poll a scan session until completed and return per-restore-point results. Requires `sessionId` from a prior VBR Scan Backup call.\n\n## Scan Backup & Results                                      \n- To scan a VM backup for malware, use **VBR Scan Backup** with `vmName` and optionally `daysBack` (default: 7).         \n- VBR Scan Backup resolves the restore point and backup object internally — no prior inventory lookup is needed.      \n- VBR Scan Backup returns a `sessionId`. Immediately pass that `sessionId` to **VBR Get Scan Results**.               \n- VBR Get Scan Results polls until the session state is `Stopped`, then returns the results.                          \n- Always report the full result to the user: for each scanned restore point, show `name`, `scanResult` and `antivirusName`.                                 \n- If `summary.hasThreats` is `true`, clearly highlight which restore points are `Infected` and recommend immediate action. - Possible scan results: `Clean`, `Infected`, `Inconclusive`, `Failed`, `Canceled`, `None`.               \n- Never call VBR Get Scan Results without a `sessionId` from a prior VBR Scan Backup call.                            \n- If the user requests a scan triggered by malware events, first call **VBR Get All Malware Events** to get the affected VM names, then call **VBR Scan Backup** for each affected VM individually.\n\n## Rules\n- **Default timeframe** is the last 24 hours when none is specified for event queries.\n- **Never** display internal identifiers (objectId, platformId) in responses."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -61,15 +61,16 @@
         240,
         304
       ],
-      "id": "aa000004-0000-0000-0000-000000000004",
+      "id": "81c9b694-176e-4047-aa9a-d26d76a8ef52",
       "name": "Security & Compliance Agent"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "PLACEHOLDER_MALWARE_EVENTS",
+          "value": "FepidoQUeBDnsEWk",
           "mode": "list",
+          "cachedResultUrl": "/workflow/FepidoQUeBDnsEWk",
           "cachedResultName": "VBR Get All Malware Events"
         },
         "workflowInputs": {
@@ -100,15 +101,16 @@
         240,
         560
       ],
-      "id": "aa000005-0000-0000-0000-000000000005",
+      "id": "d1e7757f-3286-4262-a59a-3b311689dca0",
       "name": "Call 'VBR Get All Malware Events'"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "PLACEHOLDER_AUTHORIZATION_EVENTS",
+          "value": "0VKfnzrUwrYiC1lm",
           "mode": "list",
+          "cachedResultUrl": "/workflow/0VKfnzrUwrYiC1lm",
           "cachedResultName": "VBR Get All Authorization Events"
         },
         "workflowInputs": {
@@ -139,15 +141,16 @@
         480,
         560
       ],
-      "id": "aa000006-0000-0000-0000-000000000006",
+      "id": "a0dd71bb-59a8-41c2-806f-7a63fc27e7eb",
       "name": "Call 'VBR Get All Authorization Events'"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "PLACEHOLDER_SCAN_BACKUP",
+          "value": "93uiwO58TQLFR9zK",
           "mode": "list",
+          "cachedResultUrl": "/workflow/93uiwO58TQLFR9zK",
           "cachedResultName": "VBR Scan Backup"
         },
         "workflowInputs": {
@@ -189,15 +192,16 @@
         720,
         560
       ],
-      "id": "aa000007-0000-0000-0000-000000000007",
+      "id": "76cf0d14-c329-492e-afb7-03648cafd42d",
       "name": "Call 'VBR Scan Backup'"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "PLACEHOLDER_SCAN_RESULTS",
+          "value": "htcTUQcN9i2IINRA",
           "mode": "list",
+          "cachedResultUrl": "/workflow/htcTUQcN9i2IINRA",
           "cachedResultName": "VBR Get Scan Results"
         },
         "workflowInputs": {
@@ -228,7 +232,7 @@
         960,
         560
       ],
-      "id": "aa000008-0000-0000-0000-000000000008",
+      "id": "f2527f9f-16b0-41fc-af9d-80f2174d28ae",
       "name": "Call 'VBR Get Scan Results'"
     }
   ],
@@ -301,16 +305,17 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "aa000001-0000-0000-0000-000000000001",
+  "versionId": "c389a671-fd87-49d0-a775-1b80b92d6dca",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
   },
-  "id": "SecurityComplianceAgent",
+  "id": "4WY79JIb97LbMURc",
   "tags": []
 }
