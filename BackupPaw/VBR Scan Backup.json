@@ -1,0 +1,262 @@
+{
+  "name": "VBR Scan Backup",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "vmName"
+            },
+            {
+              "name": "daysBack"
+            }
+          ]
+        }
+      },
+      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -384,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}/api/v1/restorePoints",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "nameFilter",
+              "value": "={{ $('Start').item.json.vmName }}"
+            },
+            {
+              "name": "orderColumn",
+              "value": "CreationTime"
+            },
+            {
+              "name": "orderAsc",
+              "value": "false"
+            },
+            {
+              "name": "limit",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        64,
+        0
+      ],
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "name": "Get Restore Points"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.data;\nconst vmName = $('Start').item.json.vmName;\n\nif (!data || data.length === 0) {\n  throw new Error('No restore points found for VM: ' + vmName);\n}\n\n// Filter to VMware platform only, take the most recent (already sorted desc)\nconst vmPoints = data.filter(p => p.platformName === 'VMware' || p.name.toLowerCase().includes(vmName.toLowerCase()));\nconst latest = vmPoints.length > 0 ? vmPoints[0] : data[0];\n\nreturn [{ json: { backupId: latest.backupId, creationTime: latest.creationTime, vmName: latest.name } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        0
+      ],
+      "id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
+      "name": "Extract Restore Point"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/backups/{{ $json.backupId }}/objects",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        512,
+        0
+      ],
+      "id": "b8c9d0e1-f2a3-4567-bcde-678901234567",
+      "name": "Get Backup Objects"
+    },
+    {
+      "parameters": {
+        "jsCode": "const objects = $input.first().json.data;\nconst vmName = $('Start').item.json.vmName;\nconst daysBack = parseInt($('Start').item.json.daysBack) || 7;\nconst backupId = $('Extract Restore Point').item.json.backupId;\n\nif (!objects || objects.length === 0) {\n  throw new Error('No backup objects found in backup: ' + backupId);\n}\n\n// Find object matching vmName (case-insensitive), fall back to first\nconst obj = objects.find(o => o.name.toLowerCase() === vmName.toLowerCase()) || objects[0];\n\nconst now = new Date();\nconst endDate = new Date(now);\nendDate.setDate(endDate.getDate() - daysBack);\n\nreturn [{\n  json: {\n    backupObjectPair: [{ backupId: backupId, backupObjectId: obj.id }],\n    scanMode: \"MostRecent\",\n    scanEngine: { useAntivirusEngine: true, useYaraRule: false },\n    scanRange: {\n      from: { useMostRecentPoint: true },\n      to: { useOldestPoint: false, endDate: endDate.toISOString() }\n    },\n    _meta: { vmName: obj.name, backupId: backupId, backupObjectId: obj.id, scanUntil: endDate.toISOString() }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        0
+      ],
+      "id": "c9d0e1f2-a3b4-5678-cdef-789012345678",
+      "name": "Build Scan Body"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/malwareDetection/scanBackup",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ backupObjectPair: $json.backupObjectPair, scanMode: $json.scanMode, scanEngine: $json.scanEngine, scanRange: $json.scanRange }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        0
+      ],
+      "id": "d0e1f2a3-b4c5-6789-defa-890123456789",
+      "name": "Start Scan"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get Restore Points",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Restore Points": {
+      "main": [
+        [
+          {
+            "node": "Extract Restore Point",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Restore Point": {
+      "main": [
+        [
+          {
+            "node": "Get Backup Objects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Backup Objects": {
+      "main": [
+        [
+          {
+            "node": "Build Scan Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Scan Body": {
+      "main": [
+        [
+          {
+            "node": "Start Scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "d0e1f2a3-b4c5-6789-defa-000000000001",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "VBRScanBackup000001",
+  "tags": []
+}

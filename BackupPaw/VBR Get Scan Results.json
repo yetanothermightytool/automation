@@ -1,0 +1,245 @@
+{
+  "name": "VBR Get Scan Results",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "sessionId"
+            }
+          ]
+        }
+      },
+      "id": "e1f2a3b4-c5d6-7890-eabc-901234567890",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -384,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "f2a3b4c5-d6e7-8901-fabc-012345678901",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/sessions/{{ $('Start').item.json.sessionId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        64,
+        0
+      ],
+      "id": "a3b4c5d6-e7f8-9012-abcd-123456789012",
+      "name": "Get Session Status"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "b4c5d6e7-f8a9-0123-bcde-234567890123",
+              "leftValue": "={{ $json.state }}",
+              "rightValue": "Stopped",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        0
+      ],
+      "id": "c5d6e7f8-a9b0-1234-cdef-345678901234",
+      "name": "Session Stopped?"
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        200
+      ],
+      "id": "d6e7f8a9-b0c1-2345-defa-456789012345",
+      "name": "Wait 60 Seconds",
+      "webhookId": "d6e7f8a9-b0c1-2345-defa-000000000001"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/sessions/{{ $('Start').item.json.sessionId }}/taskSessions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        512,
+        0
+      ],
+      "id": "e7f8a9b0-c1d2-3456-efab-567890123456",
+      "name": "Get Task Sessions"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tasks = $input.first().json.data;\n\nif (!tasks || tasks.length === 0) {\n  return [{ json: { results: [], summary: { total: 0, clean: 0, infected: 0, failed: 0, hasThreats: false } } }];\n}\n\n// AntivirusTaskSessionModel entries have scanResult field\nconst antivirusTasks = tasks.filter(t => t.scanResult !== undefined && t.scanResult !== null);\n\nconst results = antivirusTasks.map(t => ({\n  name: t.name,\n  scanResult: t.scanResult,\n  antivirusName: t.antivirusName || 'N/A',\n  scanState: t.scanState,\n  scanType: t.scanType\n}));\n\nconst clean = results.filter(r => r.scanResult === 'Clean').length;\nconst infected = results.filter(r => r.scanResult === 'Infected').length;\nconst failed = results.filter(r => r.scanResult === 'Failed' || r.scanResult === 'Inconclusive' || r.scanResult === 'Canceled').length;\n\nreturn [{\n  json: {\n    results,\n    summary: {\n      total: results.length,\n      clean,\n      infected,\n      failed,\n      hasThreats: infected > 0\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        0
+      ],
+      "id": "f8a9b0c1-d2e3-4567-fabc-678901234567",
+      "name": "Extract Scan Results"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get Session Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Session Status": {
+      "main": [
+        [
+          {
+            "node": "Session Stopped?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Session Stopped?": {
+      "main": [
+        [
+          {
+            "node": "Get Task Sessions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Get Session Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Task Sessions": {
+      "main": [
+        [
+          {
+            "node": "Extract Scan Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "f8a9b0c1-d2e3-4567-fabc-000000000001",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "VBRGetScanResults001",
+  "tags": []
+}
