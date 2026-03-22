@@ -60,7 +60,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const t = $('Execute Workflow Trigger').item.json;\n\nconst body = {\n  type: 'VSphereBackup',\n  name: t.jobName,\n  description: t.jobDescription || 'Created by BackupPaw',\n  virtualMachines: {\n    includes: [{\n      platform: 'VSphere',\n      type: 'VirtualMachine',\n      name: t.vmName,\n      objectId: t.objectId,\n      hostName: t.hostName\n    }],\n    excludes: {\n      vms: [],\n      disks: [],\n      templates: { isEnabled: false, excludeFromIncremental: false }\n    }\n  },\n  storage: {\n    backupRepositoryId: t.repositoryId,\n    backupProxies: { autoSelectEnabled: true, proxyIds: [] },\n    retentionPolicy: {\n      type: 'RestorePoints',\n      quantity: parseInt(t.retentionPoints) || 7\n    }\n  },\n  schedule: {\n    daily: {\n      dailyKind: 'Everyday',\n      isEnabled: true,\n      localTime: t.scheduleTime || '22:00',\n      days: ['sunday','monday','tuesday','wednesday','thursday','friday','saturday']\n    },\n    monthly: { isEnabled: false, dayOfWeek: 'saturday', dayNumberInMonth: 'Fourth', localTime: '22:00', dayOfMonth: 1,\n      months: ['January','February','March','April','May','June','July','August','September','October','November','December'] },\n    periodically: { periodicallyKind: 'Hours', isEnabled: false, frequency: 0 },\n    retry: { isEnabled: true, retryCount: 3, awaitMinutes: 10 },\n    backupWindow: { isEnabled: false },\n    runAutomatically: true\n  }\n};\n\nreturn [{ json: { body: JSON.stringify(body) } }];"
+        "jsCode": "const t = $('Execute Workflow Trigger').item.json;\n\nconst body = {\n  type: 'VSphereBackup',\n  name: t.jobName,\n  description: t.jobDescription || 'Created by BackupPaw',\n  virtualMachines: {\n    includes: [{\n      platform: 'VSphere',\n      type: 'VirtualMachine',\n      name: t.vmName,\n      objectId: t.objectId,\n      hostName: t.hostName\n    }],\n    excludes: {\n      vms: [],\n      disks: [],\n      templates: { isEnabled: false, excludeFromIncremental: false }\n    }\n  },\n  storage: {\n    backupRepositoryId: t.repositoryId,\n    backupProxies: { autoSelectEnabled: true, proxyIds: [] },\n    retentionPolicy: {\n      type: 'Days',\n      quantity: parseInt(t.retentionPoints) || 7\n    }\n  },\n  schedule: {\n    daily: {\n      dailyKind: 'Everyday',\n      isEnabled: true,\n      localTime: t.scheduleTime || '22:00',\n      days: ['sunday','monday','tuesday','wednesday','thursday','friday','saturday']\n    },\n    monthly: { isEnabled: false, dayOfWeek: 'saturday', dayNumberInMonth: 'Fourth', localTime: '22:00', dayOfMonth: 1,\n      months: ['January','February','March','April','May','June','July','August','September','October','November','December'] },\n    periodically: { periodicallyKind: 'Hours', isEnabled: false, frequency: 0 },\n    retry: { isEnabled: true, retryCount: 3, awaitMinutes: 10 },\n    backupWindow: { isEnabled: false },\n    runAutomatically: true\n  }\n};\n\nreturn [{ json: { body: JSON.stringify(body) } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -199,7 +199,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "b37d40bb-ddcb-4bea-a93c-7d9eea3b39e5",
+  "versionId": "139d9d90-fdd6-46b1-b3b1-9ecdcf92b5df",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
