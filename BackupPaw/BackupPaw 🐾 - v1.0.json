@@ -49,7 +49,7 @@
     {
       "parameters": {
         "options": {
-          "systemMessage": "=  # You are BackupPaw, an advanced AI assistant for backup and management.\nDate: {{ $now }}\n\n## Tools\n- 'Get vCenter Information Table Query' – always run first when question is about VMs or hosts.\n- 'VBR Get Inventory Object' – VM details + objectId (always run after vCenter lookup)\n- 'Backup Job Management Agent' – ALL backup job operations: list jobs, check job status, start jobs, quick backups, create new jobs, add VMs to existing jobs. Always delegate here for any job-related request. Pass the full question as 'query'.\n- 'Get All Malware Events' – malware events, no hostname required unless explicitly requested\n- 'Get All Authorization Events' – security-related events like Approved and rejected requests, Updated four-eyes authorization settings, Updated settings for users and user groups, Assigned roles, Added or deleted users and user groups\n- 'Get All Repositories States' – storage capacity, free/used space, repository info\n- 'VBR Get All Sessions' – session history, run times, success/failure details. Optional: hostName filters by job name\n- 'VBR Get Restore Points' – available restore points for a VM. Use hostName (VM name) as parameter\n- 'VBR Get All Tasks' – currently running background tasks in VBR\n- 'VBR Get Server Info' – Backup server name, build number and cumulative patches installed on the backup server.\n- 'Research Agent' – external queries: CVEs from NIST NVD, latest Veeam release version. Pass the full question as 'query'.\n- 'Entra ID Agent' – Entra ID backup queries: check if a user/group/application is backed up, compare with production. Pass the full question as 'query'.\n\n## Rules\n- VM questions: always run vCenter lookup first → then Inventory → store vmName, objectId AND hostName (the vCenter FQDN). Never delegate to Job Management Agent without these three values resolved.\n- For ALL job-related questions and actions (listing, status, starting, creating, adding VMs), delegate to 'Backup Job Management Agent'. When delegating, always include in the query: vmName, objectId, hostName (vCenter FQDN from inventory lookup).\n- If a VM is found to have no backup job, delegate to 'Backup Job Management Agent' to propose options to the user\n- Use the last 24 hours if no timeframe has been given.\n- Do not guess or derive identifiers\n- Output: each tool result in a separate labeled section\n- Keep the answers short\n- Never show results outside of the requested timeframe\n- For 'last backup' / 'when was X last backed up' questions: use VBR Get Restore Points (after VM lookup)\n- Never display the vCenter FQDN, objectId,  or other internal identifiers in the response - use only the VM or host name.\n"
+          "systemMessage": "=# You are BackupPaw, an advanced AI assistant for backup and management.\nDate: {{ $now }}\n\n## Tools\n- 'Get vCenter Information Table Query' – always run first when question is about VMs or hosts.\n- 'VBR Get Inventory Object' – VM details + objectId (always run after vCenter lookup)\n- 'Backup Job Management Agent' – ALL backup job operations: list jobs, check job status, start jobs, quick backups, create new jobs, add VMs to existing jobs. Always delegate here for any job-related request. Pass the full question as 'query'.\n- 'Security & Compliance Agent' – ALL security and compliance operations: malware events, authorization/audit events, scanning backups for malware, retrieving scan results. Pass the full question as 'query'.\n- 'Get All Repositories States' – storage capacity, free/used space, repository info\n- 'VBR Get All Sessions' – session history, run times, success/failure details. Optional: hostName filters by job name\n- 'VBR Get Restore Points' – available restore points for a VM. Use hostName (VM name) as parameter\n- 'VBR Get All Tasks' – currently running background tasks in VBR\n- 'VBR Get Server Info' – Backup server name, build number and cumulative patches installed on the backup server.\n- 'Research Agent' – external queries: CVEs from NIST NVD, latest Veeam release version. Pass the full question as 'query'.\n- 'Entra ID Agent' – Entra ID backup queries: check if a user/group/application is backed up, compare with production. Pass the full question as 'query'.\n\n## Rules \n- VM questions: always run vCenter lookup first → then Inventory → store vmName, objectId AND hostName (the vCenter FQDN). Never delegate to Job Management Agent without these three values resolved.\n- For ALL job-related questions and actions (listing, status, starting, creating, adding VMs), delegate to 'Backup Job Management Agent'. When delegating, always include in the query: vmName, objectId, hostName (vCenter FQDN from inventory lookup).\n- For ALL security and compliance questions (malware events, authorization events, backup scans), delegate to 'Security & Compliance Agent'. Pass the full question as 'query'\n- If a VM is found to have no backup job, delegate to 'Backup Job Management Agent' to propose options to the user.\n- Use the last 24 hours if no timeframe has been given.\n- Do not guess or derive identifiers.\n- Output: each tool results in a separate labeled section.\n- Keep the answers short.\n- Never show results outside of the requested timeframe.\n- For 'last backup' / 'when was X last backed up' questions: use VBR Get Restore Points (after VM lookup\n- Never display the vCenter FQDN, objectId, or other internal identifiers in the response- use only the VM or host name.\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -93,13 +93,12 @@
       "parameters": {
         "content": "## 🛠️ Tools (tables and more)\n",
         "height": 304,
-        "width": 496,
-        "color": 3
+        "width": 496
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         -1072,
-        656
+        672
       ],
       "typeVersion": 1,
       "id": "8d338ffc-73ee-4390-81f0-0187b1ab0333",
@@ -269,57 +268,15 @@
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "FepidoQUeBDnsEWk",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/FepidoQUeBDnsEWk",
-          "cachedResultName": "VBR Get All Malware Events"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
-          },
-          "matchingColumns": [
-            "hostName"
-          ],
-          "schema": [
-            {
-              "id": "hostName",
-              "displayName": "hostName",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -496,
-        1104
-      ],
-      "id": "5a226fef-3ad6-476d-9183-a32e310ff266",
-      "name": "Call 'VBR Get All Malware Events'"
-    },
-    {
-      "parameters": {
         "content": "## Backup Job Management\n",
         "height": 272,
-        "width": 320,
+        "width": 432,
         "color": "#96D784"
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        96,
-        560
+        608,
+        720
       ],
       "typeVersion": 1,
       "id": "5dd80eaa-937d-430c-82f7-1031bc0a95b0",
@@ -329,8 +286,8 @@
       "parameters": {
         "content": "## Security & Compliance",
         "height": 384,
-        "width": 608,
-        "color": 2
+        "width": 400,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
@@ -409,8 +366,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        112,
-        1104
+        128,
+        1088
       ],
       "id": "dfaa0458-1eed-4d97-8a93-14ceaeab4540",
       "name": "Call 'VBR Get All Sessions'"
@@ -451,8 +408,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        256,
-        1104
+        272,
+        1088
       ],
       "id": "0b59486a-eb3f-486d-85f7-92e6e63da145",
       "name": "Call 'VBR Get Restore Points'"
@@ -491,53 +448,11 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        400,
-        1104
+        432,
+        1088
       ],
       "id": "39ba09f5-56c8-4bb1-8d46-c2d2943d6477",
       "name": "Call 'VBR Get All Tasks'"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "0VKfnzrUwrYiC1lm",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/0VKfnzrUwrYiC1lm",
-          "cachedResultName": "VBR Get All Authorization Events"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
-          },
-          "matchingColumns": [
-            "hostName"
-          ],
-          "schema": [
-            {
-              "id": "hostName",
-              "displayName": "hostName",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
-      "position": [
-        -368,
-        1104
-      ],
-      "id": "1eff131a-2926-40cc-a14b-b69dc8c9caf3",
-      "name": "Call 'VBR Get All Authorization Events'"
     },
     {
       "parameters": {
@@ -627,14 +542,14 @@
       "parameters": {
         "content": "## Entra ID Backups\n",
         "height": 272,
-        "width": 320,
+        "width": 432,
         "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        96,
-        272
+        608,
+        432
       ],
       "id": "c1142658-2a66-4035-be06-cf35ca8a82d9",
       "name": "Sticky Note5"
@@ -675,8 +590,8 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        224,
-        384
+        768,
+        528
       ],
       "id": "616a1989-644c-477d-8d33-02c9b41edc62",
       "name": "Call 'Entra ID Agent'"
@@ -717,11 +632,53 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        224,
-        656
+        784,
+        816
       ],
       "id": "60be2f78-d67d-490c-abc1-d86e1d0bad92",
       "name": "Call 'Backup Job Management Agent'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "4WY79JIb97LbMURc",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/4WY79JIb97LbMURc",
+          "cachedResultName": "Security & Compliance Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "query"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -352,
+        1104
+      ],
+      "id": "dd6031bc-f549-4725-b086-2c705ee07e99",
+      "name": "Call 'Security & Compliance Agent'"
     }
   ],
   "pinData": {},
@@ -814,28 +771,6 @@
         ]
       ]
     },
-    "Call 'VBR Get All Malware Events'": {
-      "ai_tool": [
-        [
-          {
-            "node": "🧠  The Brain",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'VBR Get All Authorization Events'": {
-      "ai_tool": [
-        [
-          {
-            "node": "🧠  The Brain",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Call 'VBR Get All Sessions'": {
       "ai_tool": [
         [
@@ -912,6 +847,17 @@
           }
         ]
       ]
+    },
+    "Call 'Security & Compliance Agent'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🧠  The Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -920,7 +866,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "9afcddf0-9979-4dc6-9e53-d0082e094df2",
+  "versionId": "39cc6bc1-4a1c-43ac-b7da-c445cd74a00e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
