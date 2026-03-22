@@ -1,0 +1,131 @@
+{
+  "name": "VBR Get All Repositories",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -112
+      ],
+      "id": "d498967c-2340-4c3a-b1ef-eab2e3a8d3c1",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -112
+      ],
+      "id": "2ca075f3-1340-4eed-a5e5-9a6b662a6e80",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "hostName"
+            }
+          ]
+        }
+      },
+      "id": "cec79783-6c3c-43a0-82ce-250ee548fd96",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -160,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}/api/v1/backupInfrastructure/repositories",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -112
+      ],
+      "id": "d5de8cdd-a2d1-4b93-a0c2-88db8cd1e8cd",
+      "name": "Get All Repositories"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get All Repositories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Repositories": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "8082d3dc-b2b8-44d5-bf69-bf0a863f7070",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "CHkTDLam0tl3dpxm",
+  "tags": []
+}

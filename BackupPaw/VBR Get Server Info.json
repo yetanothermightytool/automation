@@ -1,0 +1,130 @@
+{
+  "name": "VBR Get Server Info",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -112
+      ],
+      "id": "7eac2487-0421-4737-83af-5b0243d8309a",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "hostName"
+            }
+          ]
+        }
+      },
+      "id": "5e635394-baf2-4172-a033-5f4248320843",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -160,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}/api/v1/serverInfo",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -112
+      ],
+      "id": "d7de5946-c652-4b46-8a9a-848635102cd1",
+      "name": "Get Server Info"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\n// Convert all fields to string\nlet text = JSON.stringify(data);\n\n// Replace IPv4 (e.g. 192.168.1.1)\ntext = text.replace(/\\b(\\d{1,3}\\.){3}\\d{1,3}\\b/g, \"[IP-REDACTED]\");\n\n// Replace IPv6 (e.g. 2001:0db8:85a3::8a2e:0370:7334)\ntext = text.replace(/([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}/g, \"[IPv6-REDACTED]\");\n\n// Convert back to JSON object\nconst cleaned = JSON.parse(text);\n\nreturn { json: cleaned };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -112
+      ],
+      "id": "68660772-3844-4e64-beb4-b822088103bc",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get Server Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Server Info": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "5f4e6803-3d84-4eaa-8d8d-30d362ada6a1",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "UhYGiC9VUPyNtQvZ",
+  "tags": []
+}

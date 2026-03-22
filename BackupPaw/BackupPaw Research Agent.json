@@ -1,0 +1,211 @@
+{
+  "name": "BackupPaw Research Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## BackupPaw Research Agent\nSeparate sub-agent called by The Brain for external queries.\nUses a cheaper LLM minimize token costs.\n\n**Assign your Chat Model to the AI Agent node.**",
+        "width": 440,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "32b90db4-6fee-4058-83b1-b2b77a9382a1",
+      "name": "Setup Note"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -144,
+        224
+      ],
+      "id": "14989e62-0db2-4448-b67b-160217b1b784",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "You are a research assistant for BackupPaw, a Veeam backup management AI agent.\n\n## Tools\n- 'NVD CVE Lookup' – search for CVEs related to Veeam. Use keyword 'Veeam Backup Replication'. Optional: startDate (ISO format) to limit results.\n- 'Veeam Release Check' – retrieve the latest Veeam Backup & Replication release information.\n\n## Rules\n- Return only factual, relevant information from the tools.\n- Summarize CVE results: CVE ID, severity (CVSS score), brief description.\n- For version checks: state the latest version and compare to the installed version if provided in the query.\n- Keep responses short and structured."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        240,
+        224
+      ],
+      "id": "fd33b46a-ab40-48ac-85d4-3c5a27a9e808",
+      "name": "🔍 Research Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        624
+      ],
+      "id": "66b0f67c-66bd-4ced-a0c1-03f111f61d29",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ZgSN9SiPsMHuRLs3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ZgSN9SiPsMHuRLs3",
+          "cachedResultName": "NVD CVE Lookup"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        464
+      ],
+      "id": "083e89d0-c15b-476e-bb23-738c649d5a46",
+      "name": "Call 'NVD CVE Lookup'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "TrYok4NjdDpn7a7J",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/TrYok4NjdDpn7a7J",
+          "cachedResultName": "Veeam Release Check"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hostName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hostName', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        464
+      ],
+      "id": "40f6a838-ebf2-42fc-90a5-e805d83ad601",
+      "name": "Call 'Veeam Release Check'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "🔍 Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "🔍 Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'NVD CVE Lookup'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🔍 Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Veeam Release Check'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🔍 Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "133ba104-262c-4cb4-8b61-355510527dfe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "NjdM9nqD7BkWdfWA",
+  "tags": []
+}

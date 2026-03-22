@@ -1,0 +1,131 @@
+{
+  "name": "VBR Get All Jobs",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -112
+      ],
+      "id": "37fa357c-0732-4d54-a141-eab50e5b2fd8",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -112
+      ],
+      "id": "0e5c71f9-e445-4cdf-b0ce-631b8affa4ea",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "hostName"
+            }
+          ]
+        }
+      },
+      "id": "6aec5679-7782-4c33-95a9-a9026dfc4bf9",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -160,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}/api/v1/jobs?typeFilter=VSphereBackup",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -112
+      ],
+      "id": "4bd25963-0924-4907-b263-cd9d5dbb6f05",
+      "name": "Get All Jobs"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get All Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Jobs": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "18588061-ce7f-4957-9d7c-85db222b51f2",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "caw1bCI5GNzU56Ky",
+  "tags": []
+}

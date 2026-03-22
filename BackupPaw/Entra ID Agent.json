@@ -1,0 +1,229 @@
+{
+  "name": "Entra ID Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Entra ID Agent\nSub-agent called by The Brain for Entra ID backup queries.\nCan use a small LLM\n\n**Assign your Chat Model to the AI Agent node.**\nAfter importing sub-workflows, replace the placeholder IDs.",
+        "width": 460,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2e73c085-7330-45b2-bd41-aff7ce4a7fb6",
+      "name": "Setup Note"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        224
+      ],
+      "id": "2411b390-521d-44e6-b672-8e78a7431757",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "You are an Entra ID backup specialist for BackupPaw.\n\n## Tools\n- 'Entra ID Check Backup' – checks if a User, Group, or Application exists in the Veeam Entra ID backup and whether it still exists in production. Use for questions like: 'Is user X backed up?', 'Is group Y protected?'\n- 'Entra ID Compare Production' – checks backup existence AND compares item properties between backup and current production state. Use for questions like: 'What changed for user X?', 'Are there differences for group Y?'\n\n## Rules\n- Extract searchType (User / Group / Application) and displayName from the query\n- Default searchType is 'User' if not specified\n- Return concise, structured results"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        240,
+        224
+      ],
+      "id": "94e53606-9075-4542-a32a-ae4ba4178898",
+      "name": "🔍 Entra ID Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        624
+      ],
+      "id": "ca168c6a-65e0-48f0-b81b-89448b87f943",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "KvaRhD6SbMuD33FV",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/KvaRhD6SbMuD33FV",
+          "cachedResultName": "VBR Entra ID Check Backup"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "searchType": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('searchType', `User, Group, or Application`, 'string') }}",
+            "displayName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('displayName', `Display name of the item to search for`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "searchType",
+              "displayName": "searchType",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": false,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "displayName",
+              "displayName": "displayName",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": false,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        464
+      ],
+      "id": "fee22e64-a2c2-4303-847f-064af99f69a9",
+      "name": "Call 'VBR Entra ID Check Backup'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "4GFwI03kjj1IoDD6",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/4GFwI03kjj1IoDD6",
+          "cachedResultName": "VBR Entra ID Compare Production"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "searchType": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('searchType', `User, Group, or Application`, 'string') }}",
+            "displayName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('displayName', `Display name of the item to search for`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "searchType",
+              "displayName": "searchType",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": false,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "displayName",
+              "displayName": "displayName",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": false,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        464
+      ],
+      "id": "258a7a66-1217-4a07-8513-eff21752421a",
+      "name": "Call 'VBR Entra ID Compare Production'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "🔍 Entra ID Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "🔍 Entra ID Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Entra ID Check Backup'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🔍 Entra ID Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VBR Entra ID Compare Production'": {
+      "ai_tool": [
+        [
+          {
+            "node": "🔍 Entra ID Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "60debc66-7bfd-48ce-b419-fba50c3554f1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "cgaNan61CarMOYD3",
+  "tags": []
+}

@@ -1,0 +1,155 @@
+{
+  "name": "VBR Get All Job States",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -112
+      ],
+      "id": "26f03f68-a657-4fb3-aeb4-29ac4b938b54",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -112
+      ],
+      "id": "523602d0-69d7-4b57-9fb1-eb2a76ef2c3a",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "hostName"
+            }
+          ]
+        }
+      },
+      "id": "47de553f-e287-47a0-8675-89299e8bb440",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -160,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}/api/v1/jobs/states?limit=50&orderColumn=LastRun&orderAsc=false",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -112
+      ],
+      "id": "eb2ea71a-2167-4a84-a287-3b8dbf5301f7",
+      "name": "Get All Jobs States"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n const data = item.json;\n return { json: {\n   type: data.type,\n   status: data.status,\n   lastResult: data.lastResult,\n   workload: data.workload,\n   name: data.name,\n   nextRunPolicy: data.nextRunPolicy,\n   repositoryName: data.repositoryName,\n   objectsCount: data.objectsCount,\n   highPriority: data.highPriority,\n   progressPercent: data.progressPercent,\n   isStorageSnapshot: data.isStorageSnapshot,\n   lastRun: data.lastRun,\n   sessionProgress: data.sessionProgress,\n   nextRun: data.nextRun,\n   // add more fields here as needed\n }};\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -112
+      ],
+      "id": "16922a70-7094-43d0-8e70-9143302c93fc",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get All Jobs States",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Jobs States": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b9f44b45-30a9-430c-ab96-641cdf01677d",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "CStKLpCVf4Erb8DI",
+  "tags": []
+}

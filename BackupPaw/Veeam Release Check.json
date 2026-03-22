@@ -1,0 +1,104 @@
+{
+  "name": "Veeam Release Check",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Veeam Release Check\nFetches https://www.veeam.com/kb2680 and extracts the 3 most recent releases for VBR v13 and v12.",
+        "height": 120,
+        "width": 440,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5cb8a8b4-aa96-461f-8fe9-6db5517b4004",
+      "name": "Setup Note"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "hostName"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "ea0ab0f0-4811-4c1a-b4a5-103a7577a07a",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://www.veeam.com/kb2680",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        192
+      ],
+      "id": "1c4a436b-be9c-4d6a-94a4-0b2b763e36d3",
+      "name": "Fetch KB2680"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.data;\n\nconst rowRegex = /<tr[\\s\\S]*?<\\/tr>/gi;\nconst stripTags = s => s.replace(/<[^>]+>/g, '').replace(/\\s+/g, ' ').trim();\n\nconst v12 = [];\nconst v13 = [];\n\nlet rowMatch;\nwhile ((rowMatch = rowRegex.exec(html)) !== null) {\n  const cells = [];\n  const cellRe = /<td[\\s\\S]*?>(.*?)<\\/td>/gi;\n  let cellMatch;\n  while ((cellMatch = cellRe.exec(rowMatch[0])) !== null) {\n    cells.push(stripTags(cellMatch[1]));\n  }\n  if (cells.length >= 3 && /^\\d+\\.\\d+\\.\\d+\\.\\d+$/.test(cells[1])) {\n    const entry = { version: cells[0], build: cells[1], releaseDate: cells[2] };\n    if (cells[1].startsWith('13.')) v13.push(entry);\n    else if (cells[1].startsWith('12.')) v12.push(entry);\n  }\n}\n\nconst results = [...v13.slice(0, 3), ...v12.slice(0, 3)];\nreturn results.map(r => ({ json: r }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        192
+      ],
+      "id": "051dc01e-d560-4f5a-833c-7374df7399f8",
+      "name": "Extract Versions"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch KB2680",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch KB2680": {
+      "main": [
+        [
+          {
+            "node": "Extract Versions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "f5523c26-49ad-46eb-884c-a83d22b3ef37",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "TrYok4NjdDpn7a7J",
+  "tags": []
+}

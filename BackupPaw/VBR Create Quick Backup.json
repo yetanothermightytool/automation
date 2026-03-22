@@ -1,0 +1,184 @@
+{
+  "name": "VBR Create Quick Backup",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}/api/v1/jobs/quickBackup/vSphere",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"platform\": \"VSphere\",  \n  \"name\": \"{{ $('Start').item.json.hostName }}\",\n  \"type\": \"VirtualMachine\",\n  \"hostName\": \"{{ $('Start').item.json.vCenter }}\",\n  \"objectId\": \"{{ $('Start').item.json.objectId }}\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -112
+      ],
+      "id": "11c22270-43a6-40d5-ae08-a467fb896a81",
+      "name": "Start Quick Backup"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -112
+      ],
+      "id": "f381e711-8b21-4965-97ae-39f2d4fd62f0",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "vCenter"
+            },
+            {
+              "name": "hostName"
+            },
+            {
+              "name": "objectId"
+            }
+          ]
+        }
+      },
+      "id": "e944d6dd-08bc-4d59-a8c5-11e6f901aa40",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -160,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        -112
+      ],
+      "id": "cbec872d-c69f-4fa4-adbd-004883e7fd26",
+      "name": "Wait 30 Seconds",
+      "webhookId": "e8c68977-f629-4cee-87bf-37af25b5ffdc"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/sessions/{{ $('Start Quick Backup').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"platform\": \"VSphere\",  \n  \"name\": \"TinyVM\",\n  \"type\": \"VirtualMachine\",\n  \"hostName\": \"pdcgsivtc01.amust.local\",\n  \"objectId\": \"vm-50234\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        -112
+      ],
+      "id": "648a0607-4aa9-4da1-ae28-b90ef5cba012",
+      "name": "Get Session Information"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start Quick Backup": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Start Quick Backup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Get Session Information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "85a6d72f-3b73-44ad-8871-fb41fdf8dc2d",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "dNYWduyj3EpxfEhj",
+  "tags": []
+}

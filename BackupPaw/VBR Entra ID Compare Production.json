@@ -1,0 +1,581 @@
+{
+  "name": "VBR Entra ID Compare Production",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "displayName"
+            },
+            {
+              "name": "searchType"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1920,
+        128
+      ],
+      "id": "b5b63286-4e6d-477a-b950-7cf5b9f469d9",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        128
+      ],
+      "id": "c5a2c78b-fbc3-4106-8990-b808562de4f0",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}/api/v1/restorePoints",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "platformNameFilter",
+              "value": "EntraID"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "orderColumn",
+              "value": "CreationTime"
+            },
+            {
+              "name": "orderAsc",
+              "value": "false"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1440,
+        128
+      ],
+      "id": "69260a9e-3839-4066-9dc8-263ed7a61e4b",
+      "name": "Get Entra ID Restore Points"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/backupBrowser/entraIdTenant/{{ $('Get Entra ID Restore Points').item.json.data[0].backupId }}/restorePoints",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"limit\": 10, \"sorting\": {\"property\": \"creationTime\", \"direction\": \"descending\"}}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1200,
+        128
+      ],
+      "id": "3e75fdfb-fe31-4a13-b1d6-b27dacef3edb",
+      "name": "Get Backup Browser Restore Points"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/restore/entraId/tenant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ backupId: $('Get Entra ID Restore Points').item.json.data[0].backupId }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        128
+      ],
+      "id": "d4021234-5a87-43f1-9fab-9c03f99000d3",
+      "name": "Start Restore Session"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        128
+      ],
+      "id": "9889b1e1-c2fa-4d87-b5f1-300d0061fae5",
+      "name": "Wait 15s",
+      "webhookId": "e1fca70e-9246-43c7-9c59-648c6cce3b6f"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/backupBrowser/entraIdTenant/{{ $('Get Entra ID Restore Points').item.json.data[0].backupId }}/browse",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ type: $('Execute Workflow Trigger').item.json.searchType, filter: { displayName: $('Execute Workflow Trigger').item.json.displayName } }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        128
+      ],
+      "id": "7d2f8b82-5f8c-4a39-8b38-ab7c91e13158",
+      "name": "Search Item"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eicp-cond-001",
+              "leftValue": "={{ $json.data.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        128
+      ],
+      "id": "11f606db-772f-4e12-86da-5b9272695655",
+      "name": "IF: Item Found?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/backupBrowser/entraIdTenant/{{ $('Start Restore Session').item.json.sessionId }}/checkProductionItems",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ items: [{ itemId: $('Search Item').item.json.data[0].id, restorePointId: $('Get Backup Browser Restore Points').item.json.data[0].id }] }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e7f1140d-6643-431e-a9f5-bf8d59e6e001",
+      "name": "Check Production"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/backupBrowser/entraIdTenant/{{ $('Start Restore Session').item.json.sessionId }}/compare",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ itemId: $('Search Item').item.json.data[0].id, itemType: $('Execute Workflow Trigger').item.json.searchType, oldRestorePointId: $('Get Backup Browser Restore Points').item.json.data[0].id, showUnchangedAttributes: false, reloadCache: true }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "abc8e45f-b57f-43e5-bef2-5dfd0706ef68",
+      "name": "Compare with Production"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/restore/entraId/tenant/{{ $('Start Restore Session').item.json.sessionId }}/stop",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ backupId: $('Get Entra ID Restore Points').item.json.data[0].backupId }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ],
+      "id": "19191d06-7a76-435f-926f-8960e9efdad3",
+      "name": "Stop Session"
+    },
+    {
+      "parameters": {
+        "jsCode": "const trigger    = $('Execute Workflow Trigger').item.json;\nconst rp         = $('Get Entra ID Restore Points').item.json;\nconst checkProd  = $('Check Production').item.json;\nconst compareRes = $('Compare with Production').item.json;\n\nreturn [{ json: {\n  searchType:         trigger.searchType,\n  displayName:        trigger.displayName,\n  foundInBackup:      true,\n  latestRestorePoint: rp.data[0]?.creationTime ?? null,\n  existsInProduction: (checkProd.items?.length ?? 0) > 0,\n  differences:        compareRes.properties ?? []\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "9b049038-620f-4d8b-931c-d0e6447a6fb6",
+      "name": "Format Found Output"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Get Bearer Token').item.json.url }}/api/v1/restore/entraId/tenant/{{ $('Start Restore Session').item.json.sessionId }}/stop",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ backupId: $('Get Entra ID Restore Points').item.json.data[0].backupId }) }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        288
+      ],
+      "id": "62de4cec-3b3c-4fa3-8b50-b51069ce966b",
+      "name": "Stop Session (Not Found)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eicp-set-001",
+              "name": "foundInBackup",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "eicp-set-002",
+              "name": "searchType",
+              "value": "={{ $('Execute Workflow Trigger').item.json.searchType }}",
+              "type": "string"
+            },
+            {
+              "id": "eicp-set-003",
+              "name": "displayName",
+              "value": "={{ $('Execute Workflow Trigger').item.json.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "eicp-set-004",
+              "name": "message",
+              "value": "={{ $('Execute Workflow Trigger').item.json.searchType }} '{{ $('Execute Workflow Trigger').item.json.displayName }}' was not found in the Entra ID backup.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        288
+      ],
+      "id": "7489d366-7cdf-4bea-b710-e90c83cea36a",
+      "name": "Not Found Output"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get Entra ID Restore Points",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Entra ID Restore Points": {
+      "main": [
+        [
+          {
+            "node": "Get Backup Browser Restore Points",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Backup Browser Restore Points": {
+      "main": [
+        [
+          {
+            "node": "Start Restore Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Restore Session": {
+      "main": [
+        [
+          {
+            "node": "Wait 15s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15s": {
+      "main": [
+        [
+          {
+            "node": "Search Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Item": {
+      "main": [
+        [
+          {
+            "node": "IF: Item Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Item Found?": {
+      "main": [
+        [
+          {
+            "node": "Check Production",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop Session (Not Found)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Production": {
+      "main": [
+        [
+          {
+            "node": "Compare with Production",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare with Production": {
+      "main": [
+        [
+          {
+            "node": "Stop Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Session": {
+      "main": [
+        [
+          {
+            "node": "Format Found Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Session (Not Found)": {
+      "main": [
+        [
+          {
+            "node": "Not Found Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6686c651-e6ab-48cb-8b0f-277089f68d38",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "4GFwI03kjj1IoDD6",
+  "tags": []
+}

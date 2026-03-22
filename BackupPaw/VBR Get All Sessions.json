@@ -1,0 +1,107 @@
+{
+  "name": "VBR Get All Sessions",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "hostName"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        224
+      ],
+      "id": "aabfda00-a4ad-4f5a-9538-33978257152e",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}/api/v1/sessions?limit=100{{ $('Execute Workflow Trigger').item.json.hostName ? '&jobNameFilter=' + $('Execute Workflow Trigger').item.json.hostName : '' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        224
+      ],
+      "id": "88cc66cc-f050-43a7-b320-f1da46076209",
+      "name": "Get Sessions"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        224,
+        224
+      ],
+      "id": "8e39b87b-6449-4951-85a5-ea5ad170701b",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get Sessions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6821a956-190a-457c-af9a-ef4dbe53f80d",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "PWx6Ks2uKSPV5FKJ",
+  "tags": []
+}

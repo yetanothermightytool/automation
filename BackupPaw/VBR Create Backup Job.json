@@ -5,33 +5,55 @@
       "parameters": {
         "workflowInputs": {
           "values": [
-            { "name": "jobName" },
-            { "name": "jobDescription" },
-            { "name": "vmName" },
-            { "name": "objectId" },
-            { "name": "hostName" },
-            { "name": "repositoryId" },
-            { "name": "retentionPoints" },
-            { "name": "scheduleTime" }
+            {
+              "name": "jobName"
+            },
+            {
+              "name": "jobDescription"
+            },
+            {
+              "name": "vmName"
+            },
+            {
+              "name": "objectId"
+            },
+            {
+              "name": "hostName"
+            },
+            {
+              "name": "repositoryId"
+            },
+            {
+              "name": "retentionPoints"
+            },
+            {
+              "name": "scheduleTime"
+            }
           ]
         }
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [-1440, 128],
-      "id": "vjcj-0001-0000-0000-000000000001",
+      "position": [
+        0,
+        0
+      ],
+      "id": "bd5caeb7-63ec-49d1-8460-4a4a4610fc12",
       "name": "Execute Workflow Trigger"
     },
     {
       "parameters": {},
       "type": "CUSTOM.oauthToken",
       "typeVersion": 1,
-      "position": [-1200, 128],
-      "id": "vjcj-0001-0000-0000-000000000002",
+      "position": [
+        240,
+        0
+      ],
+      "id": "cb2dbb2d-ca53-43a2-94fa-931ae49647dc",
       "name": "Get Bearer Token",
       "credentials": {
         "VeeamDataPlatform": {
-          "id": "REPLACE_WITH_VBR_CREDENTIAL_ID",
+          "id": "iZ15X6hk8eWfclcn",
           "name": "Veeam Backup Server 01"
         }
       }
@@ -42,8 +64,11 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-960, 128],
-      "id": "vjcj-0001-0000-0000-000000000005",
+      "position": [
+        480,
+        0
+      ],
+      "id": "ddbf917a-7f68-4aad-a6c0-0d8b2673d43f",
       "name": "Build Job Body"
     },
     {
@@ -53,50 +78,132 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}" },
-            { "name": "x-api-version", "value": "={{ $('Get Bearer Token').item.json.apiVersion }}" }
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get Bearer Token').item.json.access_token }}"
+            },
+            {
+              "name": "x-api-version",
+              "value": "={{ $('Get Bearer Token').item.json.apiVersion }}"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json.body }}",
-        "options": { "allowUnauthorizedCerts": true }
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-720, 128],
-      "id": "vjcj-0001-0000-0000-000000000003",
+      "position": [
+        720,
+        0
+      ],
+      "id": "2c9ec4b9-f23b-4363-af87-a200481cc51e",
       "name": "Create Backup Job"
     },
     {
       "parameters": {
-        "mode": "manual",
         "assignments": {
           "assignments": [
-            { "id": "vjcj-set-001", "name": "success", "value": true, "type": "boolean" },
-            { "id": "vjcj-set-002", "name": "jobId", "value": "={{ $json.id }}", "type": "string" },
-            { "id": "vjcj-set-003", "name": "jobName", "value": "={{ $json.name }}", "type": "string" },
-            { "id": "vjcj-set-004", "name": "message", "value": "=Backup job '{{ $json.name }}' created successfully for VM '{{ $('Execute Workflow Trigger').item.json.vmName }}'.", "type": "string" }
+            {
+              "id": "vjcj-set-001",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "vjcj-set-002",
+              "name": "jobId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "vjcj-set-003",
+              "name": "jobName",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "vjcj-set-004",
+              "name": "message",
+              "value": "=Backup job '{{ $json.name }}' created successfully for VM '{{ $('Execute Workflow Trigger').item.json.vmName }}'.",
+              "type": "string"
+            }
           ]
         },
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [-480, 128],
-      "id": "vjcj-0001-0000-0000-000000000004",
+      "position": [
+        960,
+        0
+      ],
+      "id": "5019cf13-60eb-4081-8336-76e554d39555",
       "name": "Format Output"
     }
   ],
+  "pinData": {},
   "connections": {
-    "Execute Workflow Trigger": { "main": [[{ "node": "Get Bearer Token", "type": "main", "index": 0 }]] },
-    "Get Bearer Token": { "main": [[{ "node": "Build Job Body", "type": "main", "index": 0 }]] },
-    "Build Job Body": { "main": [[{ "node": "Create Backup Job", "type": "main", "index": 0 }]] },
-    "Create Backup Job": { "main": [[{ "node": "Format Output", "type": "main", "index": 0 }]] }
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Build Job Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Job Body": {
+      "main": [
+        [
+          {
+            "node": "Create Backup Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Backup Job": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-  "active": false,
-  "settings": { "executionOrder": "v1", "availableInMCP": false },
-  "meta": { "templateCredsSetupCompleted": false },
-  "id": "VBR_CREATE_JOB_WORKFLOW_PLACEHOLDER",
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b37d40bb-ddcb-4bea-a93c-7d9eea3b39e5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "zK6934DQ6YhClHkU",
   "tags": []
 }

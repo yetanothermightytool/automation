@@ -1,0 +1,162 @@
+{
+  "name": "VBR Get Inventory Object",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -112
+      ],
+      "id": "53ddb7f4-f588-4ee8-9f02-12c577c2d91d",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.oauthToken",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -112
+      ],
+      "id": "228edc66-b7dc-4535-80aa-3e2e0edf415e",
+      "name": "Get Bearer Token",
+      "credentials": {
+        "VeeamDataPlatform": {
+          "id": "iZ15X6hk8eWfclcn",
+          "name": "Veeam Backup Server 01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "vCenter"
+            },
+            {
+              "name": "hostName"
+            }
+          ]
+        }
+      },
+      "id": "50184691-4952-421a-b7f3-db26affb0692",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -160,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}/api/v1/inventory/{{ $('Start').item.json.vCenter }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-version",
+              "value": "={{ $json.apiVersion }}"
+            },
+            {
+              "name": "=Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"filter\": {\n    \"type\": \"GroupExpression\",\n    \"operation\": \"and\",\n    \"items\": [\n          {\n            \"type\": \"PredicateExpression\",\n            \"operation\": \"in\",\n            \"property\": \"Type\",\n            \"value\": \"VirtualMachine\"\n          },\n          {\n            \"type\": \"PredicateExpression\",\n            \"operation\": \"equals\",\n            \"property\": \"Name\",\n            \"value\": \"{{ $('Start').item.json.hostName }}\"\n          }\n        ]\n  },\n\"hierarchyType\": \"HostsAndClusters\"\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -112
+      ],
+      "id": "ede6a2e2-9561-4082-8d2b-ebf60e6c2092",
+      "name": "Get Inventory"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\n// Convert all fields to string\nlet text = JSON.stringify(data);\n\n// Replace IPv4 (e.g. 192.168.1.1)\ntext = text.replace(/\\b(\\d{1,3}\\.){3}\\d{1,3}\\b/g, \"[IP-REDACTED]\");\n\n// Replace IPv6 (e.g. 2001:0db8:85a3::8a2e:0370:7334)\ntext = text.replace(/([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}/g, \"[IPv6-REDACTED]\");\n\n// Convert back to JSON object\nconst cleaned = JSON.parse(text);\n\nreturn { json: cleaned };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -112
+      ],
+      "id": "b9e1c569-1847-41e6-a280-d8c4bd235f08",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Get Inventory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Inventory": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "c57dd78d-3633-49a1-a01c-3250b95eeeb4",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "IcnHG39z2fArlUKx",
+  "tags": []
+}

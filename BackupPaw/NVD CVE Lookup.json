@@ -1,0 +1,82 @@
+{
+  "name": "NVD CVE Lookup",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "hostName"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        272
+      ],
+      "id": "b1eb1ebf-2021-4706-9407-9f562788c1cb",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "url": "=https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch={{ encodeURIComponent($json.keyword || 'Veeam Backup Replication') }}&resultsPerPage=20{{ $json.startDate ? '&pubStartDate=' + $json.startDate : '' }}{{ $json.endDate ? '&pubEndDate=' + $json.endDate : '' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "BackupPaw/1.0"
+            },
+            {
+              "name": "apiKey",
+              "value": "=add your api key here"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        272
+      ],
+      "id": "9aa0de55-4c48-48bc-9240-37830877088d",
+      "name": "NVD CVE Lookup"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "NVD CVE Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NVD CVE Lookup": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "07c53cd9-0949-438c-87d1-cf0d491f8584",
+  "meta": {
+    "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
+  },
+  "id": "ZgSN9SiPsMHuRLs3",
+  "tags": []
+}
