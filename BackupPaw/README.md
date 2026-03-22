@@ -79,7 +79,7 @@ Assign the **Veeam Data Platform REST API** credential to the `Get Bearer Token`
 
 ## Backup Job Management Agent
 
-The **Backup Job Management Agent** is a separate sub-agent using Claude Haiku that handles all backup job operations. The Brain delegates all job-related requests to this agent.
+The **Backup Job Management Agent** is a separate sub-agent that handles all backup job operations. The Brain delegates all job-related requests to this agent.
 
 | Sub-Workflow | Description |
 |---|---|
@@ -102,14 +102,31 @@ The **Backup Job Management Agent** is a separate sub-agent using Claude Haiku t
 
 ## Research Agent
 
-The **BackupPaw Research Agent** is a separate sub-agent using Claude Haiku to minimize token costs. It has two tools:
+The **BackupPaw Research Agent** is a separate sub-agent for CVE lookups and Veeam release checks. It has two tools:
 
 | Sub-Workflow | Description |
 |---|---|
 | NVD CVE Lookup | Searches the NIST NVD for CVEs by keyword and date range |
 | Veeam Release Check | Fetches latest VBR release versions from Veeam KB2680 |
 
-**NVD API Key (optional):** Without a key, requests are rate-limited to 5 per 30 seconds. To add one, create a **Generic Credential Type → Header Auth** credential with header name `apiKey` and assign it to the `NVD CVE Search` node in the `NVD CVE Lookup` sub-workflow.
+---
+
+## NVD CVE Lookup — API Key Setup
+
+The `NVD CVE Lookup` sub-workflow queries the [NIST National Vulnerability Database (NVD)](https://nvd.nist.gov/) REST API. Without an API key, requests are rate-limited to **5 requests per 30 seconds**. For regular use, requesting a free key is strongly recommended.
+
+### Request an API Key
+
+1. Go to [https://nvd.nist.gov/developers/request-an-api-key](https://nvd.nist.gov/developers/request-an-api-key)
+2. Enter your email address and submit the form
+3. NIST will send an API key to your inbox — this usually arrives within minutes
+
+### Configure the Key in n8n
+
+1. In n8n, go to **Credentials** and create a new credential of type **Generic Credential Type → Header Auth**
+2. Set the **Name** field to `apiKey`
+3. Set the **Value** field to your API key
+4. Open the `NVD CVE Lookup` sub-workflow and assign the credential to the **NVD CVE Search** HTTP Request node
 
 ---
 
@@ -135,7 +152,7 @@ The **Security & Compliance Agent** is a separate sub-agent that handles all sec
 
 ## Entra ID Agent
 
-The **Entra ID Agent** is a separate sub-agent using Claude Haiku to query Entra ID backup data via the VBR REST API. It has two tools:
+The **Entra ID Agent** is a separate sub-agent to query Entra ID backup data via the VBR REST API. It has two tools:
 
 | Sub-Workflow | Description |
 |---|---|
