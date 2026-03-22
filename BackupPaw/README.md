@@ -16,6 +16,16 @@ An n8n AI agent for interacting with **Veeam Backup & Replication** via natural 
 
 ---
 
+## LLM Configuration
+
+LLM nodes are **intentionally not included** in the workflows. This allows you to choose the model that best fits your environment, cost requirements, and capabilities.
+
+After importing the workflows, add and connect an LLM node to each agent: `BackupPaw 🐾`, `Backup Job Management Agent`, `Security & Compliance Agent`, `BackupPaw Research Agent`, and `Entra ID Agent`.
+
+Any model that reliably follows tool-call formats will work.
+
+---
+
 ## DataTable Configuration
 
 The agent requires an n8n **DataTable** named `Env-Settings` with the following entry:
@@ -50,9 +60,8 @@ Chat Input
 | VBR Get All Sessions | Session history with optional `hostName` filter |
 | VBR Get Restore Points | Available restore points filtered by VM name |
 | VBR Get All Tasks | Currently running background tasks |
-| VBR Get All Malware Events | Malware detection events |
-| VBR Get All Authorization Events | Security and permission-related audit events |
 | Backup Job Management Agent | Sub-agent for all backup job operations (list, start, create, edit) |
+| Security & Compliance Agent | Sub-agent for malware events, authorization events, and backup scanning |
 | BackupPaw Research Agent | Sub-agent for CVE lookups and Veeam release checks |
 | Entra ID Agent | Sub-agent for Entra ID backup queries and comparisons |
 
@@ -104,6 +113,26 @@ The **BackupPaw Research Agent** is a separate sub-agent using Claude Haiku to m
 
 ---
 
+## Security & Compliance Agent
+
+The **Security & Compliance Agent** is a separate sub-agent that handles all security and compliance operations. The Brain delegates all security-related requests to this agent.
+
+| Sub-Workflow | Description |
+|---|---|
+| VBR Get All Malware Events | Malware detection events, optional VM name filter |
+| VBR Get All Authorization Events | Security audit events (permission changes, role assignments, four-eyes authorization) |
+| VBR Scan Backup | Scans a VM's backup for malware using the antivirus engine |
+| VBR Get Scan Results | Polls the scan session until completed, returns per-restore-point results |
+
+**Notes:**
+- The agent always asks for explicit confirmation before starting a scan
+- Scanning flow: `VBR Scan Backup` returns a `sessionId` → immediately passed to `VBR Get Scan Results`
+- Scan results include `name`, `scanResult` and `antivirusName` per restore point
+- If infected restore points are found, the agent highlights them and recommends immediate action
+- If a scan is requested for all VMs affected by malware events, the agent queries events first and then scans each VM individually
+
+---
+
 ## Entra ID Agent
 
 The **Entra ID Agent** is a separate sub-agent using Claude Haiku to query Entra ID backup data via the VBR REST API. It has two tools:
@@ -122,6 +151,9 @@ The agent determines which tool to use based on the query — simple existence c
 - `Is VM prod-web-01 protected by a backup job?`
 - `When was vm-db-02 last backed up?`
 - `Are there any malware events in the last 24 hours?`
+- `Scan the backup of vm-db-02 for malware.` *(requires confirmation)*
+- `Scan all VMs affected by malware events.` *(requires confirmation)*
+- `Are there any suspicious authorization events today?`
 - `How much free space is left on the backup repositories?`
 - `Start a quick backup for vm-app-03.` *(requires confirmation)*
 - `VM app-07 is not in any backup job — what should I do?`
@@ -140,6 +172,10 @@ The agent determines which tool to use based on the query — simple existence c
 ---
 
 ## Version History
+- 0.2 (March 2026)
+   - Added Security & Compliance Agent (malware events, authorization events, backup scanning)
+   - Added VBR Scan Backup, VBR Get Scan Results, VBR Get Backup Objects sub-workflows
+   - LLM nodes removed from all workflows — user selects their own model
 - 0.1 (February 2026)
    - Initial version
 
@@ -151,4 +187,5 @@ The agent determines which tool to use based on the query — simple existence c
 - **Actions** (start job, quick backup, create job, add VM) require explicit user confirmation before execution
 - **Default timeframe** is the last 24 hours when none is specified
 - **Last backup queries** use `VBR Get Restore Points` after VM lookup
-- **Job, Research, and Entra ID queries** are delegated to dedicated sub-agents running Claude Haiku
+- **Job, Security, Research, and Entra ID queries** are delegated to dedicated sub-agents
+- **Backup scans** always require user confirmation and automatically poll for results
