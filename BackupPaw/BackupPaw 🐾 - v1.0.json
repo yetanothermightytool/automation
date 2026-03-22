@@ -49,7 +49,7 @@
     {
       "parameters": {
         "options": {
-          "systemMessage": "=  # You are BackupPaw, an advanced AI assistant for backup and management.\nDate: {{ $now }}\n\n## Tools\n- 'Get vCenter Information Table Query' – always run first when question is about VMs or hosts.\n- 'VBR Get Inventory Object' – VM details + objectId (always run after vCenter lookup)\n- 'Backup Job Management Agent' – ALL backup job operations: list jobs, check job status, start jobs, quick backups, create new jobs, add VMs to existing jobs. Always delegate here for any job-related request. Pass the full question as 'query'.\n- 'Get All Malware Events' – malware events, no hostname required unless explicitly requested\n- 'Get All Authorization Events' – security-related events like Approved and rejected requests, Updated four-eyes authorization settings, Updated settings for users and user groups, Assigned roles, Added or deleted users and user groups\n- 'Get All Repositories States' – storage capacity, free/used space, repository info\n- 'VBR Get All Sessions' – session history, run times, success/failure details. Optional: hostName filters by job name\n- 'VBR Get Restore Points' – available restore points for a VM. Use hostName (VM name) as parameter\n- 'VBR Get All Tasks' – currently running background tasks in VBR\n- 'VBR Get Server Info' – Backup server name, build number and cumulative patches installed on the backup server.\n- 'Research Agent' – external queries: CVEs from NIST NVD, latest Veeam release version. Pass the full question as 'query'.\n- 'Entra ID Agent' – Entra ID backup queries: check if a user/group/application is backed up, compare with production. Pass the full question as 'query'.\n\n## Rules\n- VM questions: always run vCenter lookup first → then Inventory → store vmName, objectId AND hostName (the vCenter FQDN). Never delegate to Job Management Agent without these three values resolved.\n- For ALL job-related questions and actions (listing, status, starting, creating, adding VMs), delegate to 'Backup Job Management Agent'. When delegating, always include in the query: vmName, objectId, hostName (vCenter FQDN from inventory lookup).\n- If a VM is found to have no backup job, delegate to 'Backup Job Management Agent' to propose options to the user\n- Use the last 24 hours if no timeframe has been given.\n- Do not guess or derive identifiers\n- Output: each tool result in a separate labeled section\n- Keep the answers short\n- Never show results outside of the requested timeframe\n- For 'last backup' / 'when was X last backed up' questions: use VBR Get Restore Points (after VM lookup)\n- Never display the vCenter FDN, objectId,  or other internal identifiers in the response - use only the VM or host name.\n"
+          "systemMessage": "=  # You are BackupPaw, an advanced AI assistant for backup and management.\nDate: {{ $now }}\n\n## Tools\n- 'Get vCenter Information Table Query' – always run first when question is about VMs or hosts.\n- 'VBR Get Inventory Object' – VM details + objectId (always run after vCenter lookup)\n- 'Backup Job Management Agent' – ALL backup job operations: list jobs, check job status, start jobs, quick backups, create new jobs, add VMs to existing jobs. Always delegate here for any job-related request. Pass the full question as 'query'.\n- 'Get All Malware Events' – malware events, no hostname required unless explicitly requested\n- 'Get All Authorization Events' – security-related events like Approved and rejected requests, Updated four-eyes authorization settings, Updated settings for users and user groups, Assigned roles, Added or deleted users and user groups\n- 'Get All Repositories States' – storage capacity, free/used space, repository info\n- 'VBR Get All Sessions' – session history, run times, success/failure details. Optional: hostName filters by job name\n- 'VBR Get Restore Points' – available restore points for a VM. Use hostName (VM name) as parameter\n- 'VBR Get All Tasks' – currently running background tasks in VBR\n- 'VBR Get Server Info' – Backup server name, build number and cumulative patches installed on the backup server.\n- 'Research Agent' – external queries: CVEs from NIST NVD, latest Veeam release version. Pass the full question as 'query'.\n- 'Entra ID Agent' – Entra ID backup queries: check if a user/group/application is backed up, compare with production. Pass the full question as 'query'.\n\n## Rules\n- VM questions: always run vCenter lookup first → then Inventory → store vmName, objectId AND hostName (the vCenter FQDN). Never delegate to Job Management Agent without these three values resolved.\n- For ALL job-related questions and actions (listing, status, starting, creating, adding VMs), delegate to 'Backup Job Management Agent'. When delegating, always include in the query: vmName, objectId, hostName (vCenter FQDN from inventory lookup).\n- If a VM is found to have no backup job, delegate to 'Backup Job Management Agent' to propose options to the user\n- Use the last 24 hours if no timeframe has been given.\n- Do not guess or derive identifiers\n- Output: each tool result in a separate labeled section\n- Keep the answers short\n- Never show results outside of the requested timeframe\n- For 'last backup' / 'when was X last backed up' questions: use VBR Get Restore Points (after VM lookup)\n- Never display the vCenter FQDN, objectId,  or other internal identifiers in the response - use only the VM or host name.\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -377,9 +377,9 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "SESSIONS_WORKFLOW_PLACEHOLDER",
+          "value": "PWx6Ks2uKSPV5FKJ",
           "mode": "list",
-          "cachedResultUrl": "/workflow/SESSIONS_WORKFLOW_PLACEHOLDER",
+          "cachedResultUrl": "/workflow/PWx6Ks2uKSPV5FKJ",
           "cachedResultName": "VBR Get All Sessions"
         },
         "workflowInputs": {
@@ -461,16 +461,29 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "TASKS_WORKFLOW_PLACEHOLDER",
+          "value": "14o4ZvoZitJzSxtk",
           "mode": "list",
-          "cachedResultUrl": "/workflow/TASKS_WORKFLOW_PLACEHOLDER",
+          "cachedResultUrl": "/workflow/14o4ZvoZitJzSxtk",
           "cachedResultName": "VBR Get All Tasks"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {},
-          "matchingColumns": [],
-          "schema": [],
+          "matchingColumns": [
+            "hostName"
+          ],
+          "schema": [
+            {
+              "id": "hostName",
+              "displayName": "hostName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
         }
@@ -907,8 +920,9 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "b8731004-67b2-4902-8ca8-a840d48352b8",
+  "versionId": "9afcddf0-9979-4dc6-9e53-d0082e094df2",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "14b2d430486c535ba25a54c9abcb9f7f90d4bb3c79e66b46f73b9ada957337e5"
   },
   "id": "lklXzHf4hkYxrVUO",
