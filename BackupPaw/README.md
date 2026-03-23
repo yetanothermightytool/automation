@@ -13,14 +13,6 @@ An n8n AI agent for **Veeam Backup & Replication** Query status, manage jobs, sc
 
 ---
 
-Drei Sätze weniger, gleicher Inhalt. Was meinst du?
-
-Everyone is talking about the Claw 🦞 autonomously clawing its way through your systems at 3am. BackupPaw makes sure there's actually something left to recover when it does. 🐾
-
-An n8n AI agent for interacting with **Veeam Backup & Replication** via natural language chat. The agent queries the VBR REST API to answer questions, report status, and trigger backup operations.
-
----
-
 ## Requirements
 
 - n8n **2.9.4** (tested) — later versions have known issues with the Chat Trigger node, compatibility will be verified with a future release
