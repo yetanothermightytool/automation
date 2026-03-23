@@ -1,6 +1,19 @@
 # BackupPaw 🐾
+### Your conversational backup operator for Veeam
 
-> **Work in Progress** — functionality and documentation are subject to change.
+> **Work in Progress**  Functionality and documentation are subject to change.
+
+Stop clicking through backup consoles. Start talking to them.
+
+Everyone is talking about the Claw 🦞 autonomously clawing its way through your systems at 3am. **BackupPaw makes sure there's actually something left to recover when it does.**
+
+An n8n AI agent for **Veeam Backup & Replication** Query status, manage jobs, scan for malware, all through natural language.
+
+> **Your model, your rules.** LLM nodes are not included/configured by design. Run locally with Ollama or connect any cloud model. You decide where your data goes.
+
+---
+
+Drei Sätze weniger, gleicher Inhalt. Was meinst du?
 
 Everyone is talking about the Claw 🦞 autonomously clawing its way through your systems at 3am. BackupPaw makes sure there's actually something left to recover when it does. 🐾
 
