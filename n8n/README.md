@@ -2,9 +2,12 @@
 
 This custom n8n integration provides n8n nodes that use a custom credential configuration to generate Bearer tokens via the Password Grant method for Veeam Backup & Replication and Veeam ONE REST APIs.
 
+**NEW The node can now also be installed directly via the n8n Comunity Node feature: ![alt text](https://docs.n8n.io/integrations/community-nodes/installation/)**
+
+
 ## Version Information
 ~~~~
-Version: 1.0
+Version: 1.1
 Requires: Veeam Backup & Replication & n8n
 Author: Stephan "Steve" Herzig
 ~~~~
@@ -92,5 +95,7 @@ Tested with n8n version 2.7.5
 **This integration and workflows are not officially supported by Veeam Software. Use it at your own risk.**
 
 ## Version History
+- 1.1 (March 24th 2026)
+   - Community node released (verson 0.1.2)
 - 1.0 (February 16th 2026)
    - Initial version
